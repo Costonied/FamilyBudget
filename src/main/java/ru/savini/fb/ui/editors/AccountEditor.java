@@ -11,9 +11,15 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.savini.fb.FamilyBudgetApplication;
 import ru.savini.fb.domain.entity.Account;
+import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.AccountRepository;
+
+import java.io.IOException;
 
 /**
  * A simple example to introduce building forms. As your real application is probably much
@@ -26,7 +32,7 @@ import ru.savini.fb.repo.AccountRepository;
 @SpringComponent
 @UIScope
 public class AccountEditor extends VerticalLayout implements KeyNotifier {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccountEditor.class);
     private final AccountRepository repository;
 
     /**
@@ -45,11 +51,15 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
 
     Binder<Account> binder = new Binder<>(Account.class);
+
     private ChangeHandler changeHandler;
+    private GSheetsService gSheets;
 
     @Autowired
-    public AccountEditor(AccountRepository repository) {
+    public AccountEditor(AccountRepository repository, GSheetsService gSheets) {
         this.repository = repository;
+        this.gSheets = gSheets;
+
         binder.forField(amount)
                 .withConverter(new StringToDoubleConverter("Must enter a double"))
                 .bind(Account::getAmount, Account::setAmount);
@@ -82,6 +92,11 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     void save() {
         repository.save(account);
         changeHandler.onChange();
+        try {
+            gSheets.addAccount(account);
+        } catch (IOException e) {
+            LOGGER.error("Problem save to Google Sheets");
+        }
     }
 
     public interface ChangeHandler {
