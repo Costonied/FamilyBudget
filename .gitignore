@@ -1,6 +1,7 @@
 .idea/
 /target/**
 /build/**
+/data/**
 /config/**
 /node_modules/**
 
