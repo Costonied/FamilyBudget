@@ -7,6 +7,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -14,10 +15,10 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.savini.fb.FamilyBudgetApplication;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.AccountRepository;
+import ru.savini.fb.ui.helpers.AccountHelper;
 
 import java.io.IOException;
 
@@ -43,6 +44,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     /* Fields to edit properties in Account entity */
     TextField name = new TextField("Account name");
     TextField amount = new TextField("Amount");
+    ComboBox<String> currency = new ComboBox<>("List of currency codes", AccountHelper.getCurrencyCode());
 
     /* Action buttons */
     Button save = new Button("Save", VaadinIcon.CHECK.create());
@@ -60,15 +62,9 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         this.repository = repository;
         this.gSheets = gSheets;
 
-        binder.forField(amount)
-                .withConverter(new StringToDoubleConverter("Must enter a double"))
-                .bind(Account::getAmount, Account::setAmount);
+        add(name, amount, currency, actions);
 
-        add(name, amount, actions);
-
-        // bind using naming convention
-        binder.bindInstanceFields(this);
-
+        initBinder();
         // Configure and style components
         setSpacing(true);
 
@@ -82,6 +78,15 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         delete.addClickListener(e -> delete());
         cancel.addClickListener(e -> editAccount(account));
         setVisible(false);
+    }
+
+    private void initBinder() {
+        binder.forField(amount)
+                .withConverter(new StringToDoubleConverter("Must enter a double"))
+                .bind(Account::getAmount, Account::setAmount);
+
+        // bind using naming convention
+        binder.bindInstanceFields(this);
     }
 
     void delete() {

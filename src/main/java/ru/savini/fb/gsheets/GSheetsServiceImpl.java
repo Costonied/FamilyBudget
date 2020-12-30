@@ -63,17 +63,18 @@ public class GSheetsServiceImpl implements GSheetsService {
         valueRange.setMajorDimension("ROWS");
         valueRange.setRange("Accounts!A2:D");
         valueRange.setValues(Collections.singletonList(
-                Arrays.asList(account.getId(), account.getName(), account.getAmount())));
+                Arrays.asList(
+                        account.getId(), account.getName(),
+                        account.getAmount(), account.getCurrency())));
         return valueRange;
     }
 
     @Override
     // TODO: рефакторинг - разбить ответственность функции
     public List<Account> getAccounts() throws IOException {
-        final int accountIdIndex = 0;
-        final int accountNameIndex = 1;
-        final int accountAmountIndex = 2;
-        // TODO: Перейти на заполнение всех параметров счета
+        final int idIndex = 0;
+        final int nameIndex = 1;
+        final int amountIndex = 2;
         final int accountCurrencyIndex = 3;
         final String range = "Accounts!A2:D";
         List<Account> accounts = new ArrayList<>();
@@ -87,9 +88,10 @@ public class GSheetsServiceImpl implements GSheetsService {
             for (List<Object> row : values) {
                 accounts.add(
                         new Account(
-                                Long.parseLong(row.get(accountIdIndex).toString()),
-                                row.get(accountNameIndex).toString(),
-                                GSheetsUtils.getDoubleFromString(row.get(accountAmountIndex).toString())
+                                Long.parseLong(row.get(idIndex).toString()),
+                                row.get(nameIndex).toString(),
+                                GSheetsUtils.getDoubleFromString(row.get(amountIndex).toString()),
+                                row.get(accountCurrencyIndex).toString()
                         )
                 );
             }

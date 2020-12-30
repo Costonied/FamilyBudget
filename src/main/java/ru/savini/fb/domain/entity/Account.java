@@ -10,8 +10,9 @@ public class Account {
     @Id
     @GeneratedValue
     private Long id;
-    private String name;
     private double amount;
+    private String name;
+    private String currency;
 
     protected Account() {
     }
@@ -21,10 +22,11 @@ public class Account {
         this.amount = amount;
     }
 
-    public Account(Long id, String name, double amount) {
+    public Account(Long id, String name, double amount, String currency) {
         this.id = id;
         this.name = name;
         this.amount = amount;
+        this.currency = currency;
     }
 
     public Long getId() {
@@ -39,6 +41,10 @@ public class Account {
         return amount;
     }
 
+    public String getCurrency() {
+        return currency;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -49,6 +55,10 @@ public class Account {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     @Override
