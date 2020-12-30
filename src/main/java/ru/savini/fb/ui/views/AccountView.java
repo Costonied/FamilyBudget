@@ -49,13 +49,13 @@ public class AccountView extends VerticalLayout {
         filter.setValueChangeMode(ValueChangeMode.EAGER);
         filter.addValueChangeListener(e -> listCustomers(e.getValue()));
 
-        // Connect selected Customer to editor or hide if none is selected
+        // Connect selected Account to editor or hide if none is selected
         grid.asSingleSelect().addValueChangeListener(e -> {
             editor.editAccount(e.getValue());
         });
 
         // Instantiate and edit new Customer the new button is clicked
-        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", 0.00)));
+        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", 0.00, "RUB")));
 
         // Listen changes made by the editor, refresh data from backend
         editor.setChangeHandler(() -> {

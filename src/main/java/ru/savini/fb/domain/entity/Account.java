@@ -17,9 +17,10 @@ public class Account {
     protected Account() {
     }
 
-    public Account(String name, double amount) {
+    public Account(String name, double amount, String currency) {
         this.name = name;
         this.amount = amount;
+        this.currency = currency;
     }
 
     public Account(Long id, String name, double amount, String currency) {

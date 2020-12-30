@@ -44,7 +44,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     /* Fields to edit properties in Account entity */
     TextField name = new TextField("Account name");
     TextField amount = new TextField("Amount");
-    ComboBox<String> currency = new ComboBox<>("List of currency codes", AccountHelper.getCurrencyCode());
+    ComboBox<String> currency;
 
     /* Action buttons */
     Button save = new Button("Save", VaadinIcon.CHECK.create());
@@ -61,10 +61,9 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     public AccountEditor(AccountRepository repository, GSheetsService gSheets) {
         this.repository = repository;
         this.gSheets = gSheets;
+        initBinder();
 
         add(name, amount, currency, actions);
-
-        initBinder();
         // Configure and style components
         setSpacing(true);
 
@@ -81,12 +80,19 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void initBinder() {
+        initCurrencyCodes();
         binder.forField(amount)
                 .withConverter(new StringToDoubleConverter("Must enter a double"))
                 .bind(Account::getAmount, Account::setAmount);
+        binder.forField(currency).bind(Account::getName, (c, a) -> c.setCurrency(currency.getValue()));
 
         // bind using naming convention
         binder.bindInstanceFields(this);
+    }
+
+    private void initCurrencyCodes() {
+        currency = new ComboBox<>("List of currency codes");
+        currency.setItems(AccountHelper.getCurrencyCode());
     }
 
     void delete() {
@@ -123,10 +129,12 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         }
         cancel.setVisible(persisted);
 
-        // Bind customer properties to similarly named fields
+        // Bind account properties to similarly named fields
         // Could also use annotation or "manual binding" or programmatically
         // moving values from fields to entities before saving
         binder.setBean(this.account);
+        // set currency from edited account because setBean not do it well for currency
+        currency.setValue(account.getCurrency());
 
         setVisible(true);
 
