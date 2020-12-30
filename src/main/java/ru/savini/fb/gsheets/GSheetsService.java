@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface GSheetsService {
     List<Account> getAccounts() throws IOException;
-    int addAccount(Account account) throws IOException;
+    void addAccount(Account account) throws IOException;
 }

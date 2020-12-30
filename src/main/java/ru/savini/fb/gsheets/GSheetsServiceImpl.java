@@ -50,13 +50,12 @@ public class GSheetsServiceImpl implements GSheetsService {
     }
 
     @Override
-    public int addAccount(Account account) throws IOException {
+    public void addAccount(Account account) throws IOException {
         ValueRange valueRange = getNewAccountValueRange(account);
         service.spreadsheets().values()
                 .append(SPREADSHEET_ID, valueRange.getRange(), valueRange)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
-        return 0;
     }
 
     private ValueRange getNewAccountValueRange(Account account) {

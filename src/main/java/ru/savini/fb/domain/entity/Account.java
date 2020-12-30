@@ -10,9 +10,7 @@ public class Account {
     @Id
     @GeneratedValue
     private Long id;
-
     private String name;
-
     private double amount;
 
     protected Account() {
