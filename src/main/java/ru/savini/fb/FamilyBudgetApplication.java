@@ -22,8 +22,8 @@ public class FamilyBudgetApplication {
     public CommandLineRunner loadData(AccountRepository repository) {
         return (args) -> {
             // save a couple of customers
-            repository.save(new Account("Наличные", 10.0));
-            repository.save(new Account("Карта Сбербанк", 2.34));
+//            repository.save(new Account("Наличные", 10.0));
+//            repository.save(new Account("Карта Сбербанк", 2.34));
 
             // fetch all customers
             LOGGER.info("Accounts found with findAll():");
@@ -34,20 +34,20 @@ public class FamilyBudgetApplication {
             LOGGER.info("");
 
             // fetch an individual account by ID
-            Account account = repository.findById(1L).get();
-            LOGGER.info("Account found with findOne(1L):");
-            LOGGER.info("--------------------------------");
-            LOGGER.info(account.toString());
-            LOGGER.info("");
+//            Account account = repository.findById(1L).get();
+//            LOGGER.info("Account found with findOne(1L):");
+//            LOGGER.info("--------------------------------");
+//            LOGGER.info(account.toString());
+//            LOGGER.info("");
 
             // fetch accounts by last name
-            LOGGER.info("Account found with findByNameStartsWithIgnoreCase('Карта'):");
-            LOGGER.info("--------------------------------------------");
-            for (Account card : repository
-                    .findByNameStartsWithIgnoreCase("Карта")) {
-                LOGGER.info(card.toString());
-            }
-            LOGGER.info("");
+//            LOGGER.info("Account found with findByNameStartsWithIgnoreCase('Карта'):");
+//            LOGGER.info("--------------------------------------------");
+//            for (Account card : repository
+//                    .findByNameStartsWithIgnoreCase("Карта")) {
+//                LOGGER.info(card.toString());
+//            }
+//            LOGGER.info("");
         };
     }
 }
