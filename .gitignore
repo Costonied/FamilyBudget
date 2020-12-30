@@ -3,6 +3,7 @@
 /build/**
 /data/**
 /config/**
+/tokens/**
 /node_modules/**
 
 /package.json

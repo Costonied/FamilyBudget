@@ -23,6 +23,12 @@ public class Account {
         this.amount = amount;
     }
 
+    public Account(Long id, String name, double amount) {
+        this.id = id;
+        this.name = name;
+        this.amount = amount;
+    }
+
     public Long getId() {
         return id;
     }
