@@ -106,7 +106,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         try {
             gSheets.addAccount(account);
         } catch (IOException e) {
-            LOGGER.error("Problem save to Google Sheets");
+            LOGGER.error("Problem save account to Google Sheets");
         }
     }
 
@@ -140,6 +140,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
 
         // Focus name initially
         name.focus();
+        LOGGER.info("Edit account [{}]", account);
     }
 
     public void setChangeHandler(ChangeHandler h) {

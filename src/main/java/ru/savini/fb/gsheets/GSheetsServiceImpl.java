@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import org.springframework.stereotype.Service;
 import ru.savini.fb.domain.entity.Account;
+import ru.savini.fb.domain.entity.Category;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -97,6 +98,25 @@ public class GSheetsServiceImpl implements GSheetsService {
             }
         }
         return accounts;
+    }
+
+    @Override
+    public void addCategory(Category category) throws IOException {
+        ValueRange valueRange = getNewCategoryValueRange(category);
+        service.spreadsheets().values()
+                .append(SPREADSHEET_ID, valueRange.getRange(), valueRange)
+                .setValueInputOption("USER_ENTERED")
+                .execute();
+    }
+
+    private ValueRange getNewCategoryValueRange(Category category) {
+        ValueRange valueRange = new ValueRange();
+        valueRange.setMajorDimension("ROWS");
+        valueRange.setRange("Categories!A2:C");
+        valueRange.setValues(Collections.singletonList(
+                Arrays.asList(
+                        category.getId(), category.getName(), category.getType())));
+        return valueRange;
     }
 
     /**
