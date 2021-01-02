@@ -64,8 +64,8 @@ public class Account {
 
     @Override
     public String toString() {
-        return String.format("Account[id=%d, name='%s', amount='%.2f']",
-                id, name, amount);
+        return String.format("Account[id=%d, name='%s', amount='%.2f', currency='%s']",
+                id, name, amount, currency);
     }
 
 }
