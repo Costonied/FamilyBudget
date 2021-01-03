@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 @Entity
 public class Category {
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator="CATEGORY_GENERATOR")
     private Long id;
     private String name;
     private String type;

@@ -8,7 +8,7 @@ import javax.persistence.Id;
 public class Account {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(generator="ACCOUNT_GENERATOR")
     private Long id;
     private double amount;
     private String name;
