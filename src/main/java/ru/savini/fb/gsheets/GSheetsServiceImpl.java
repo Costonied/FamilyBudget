@@ -16,6 +16,7 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import org.springframework.stereotype.Service;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.exceptions.ValueRangeException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,6 +27,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static ru.savini.fb.gsheets.GSheetsUtils.getLongFromObj;
+import static ru.savini.fb.gsheets.GSheetsUtils.getStringFromObj;
+import static ru.savini.fb.gsheets.GSheetsUtils.getDoubleFromObj;
 
 @Service
 public class GSheetsServiceImpl implements GSheetsService {
@@ -71,31 +76,11 @@ public class GSheetsServiceImpl implements GSheetsService {
     }
 
     @Override
-    // TODO: рефакторинг - разбить ответственность функции
-    public List<Account> getAccounts() throws IOException {
-        final int idIndex = 0;
-        final int nameIndex = 1;
-        final int amountIndex = 2;
-        final int accountCurrencyIndex = 3;
-        final String range = "Accounts!A2:D";
+    public List<Account> getAccounts() {
         List<Account> accounts = new ArrayList<>();
-        ValueRange response = this.service.spreadsheets().values()
-                .get(SPREADSHEET_ID, range)
-                .execute();
-        List<List<Object>> values = response.getValues();
-        if (values == null || values.isEmpty()) {
-            // nothing
-        } else {
-            for (List<Object> row : values) {
-                accounts.add(
-                        new Account(
-                                Long.parseLong(row.get(idIndex).toString()),
-                                row.get(nameIndex).toString(),
-                                GSheetsUtils.getDoubleFromString(row.get(amountIndex).toString()),
-                                row.get(accountCurrencyIndex).toString()
-                        )
-                );
-            }
+        List<List<Object>> accountsValue = getValuesOfDomain(GSheetsInfo.ACCOUNTS_RANGE);
+        for (List<Object> row : accountsValue) {
+            accounts.add(createAccFromRow(row));
         }
         return accounts;
     }
@@ -107,6 +92,28 @@ public class GSheetsServiceImpl implements GSheetsService {
                 .append(SPREADSHEET_ID, valueRange.getRange(), valueRange)
                 .setValueInputOption("USER_ENTERED")
                 .execute();
+    }
+
+    private List<List<Object>> getValuesOfDomain(String domain) {
+        try {
+            ValueRange domainValueRange = this.service
+                    .spreadsheets().values()
+                    .get(GSheetsInfo.SPREADSHEET_ID, domain)
+                    .execute();
+            List<List<Object>> result = domainValueRange.getValues();
+            return result != null ? result : Collections.singletonList(Collections.emptyList());
+        } catch (IOException e) {
+            throw new ValueRangeException(String.format("Problem while get '%s'", domain));
+        }
+    }
+
+    private Account createAccFromRow(List<Object> row) {
+        return new Account(
+                getLongFromObj(row.get(GSheetsInfo.ACCOUNT_ID_IDX)),
+                getStringFromObj(row.get(GSheetsInfo.ACCOUNT_NAME_IDX)),
+                getDoubleFromObj(row.get(GSheetsInfo.ACCOUNT_AMOUNT_IDX)),
+                getStringFromObj(GSheetsInfo.ACCOUNT_CURRENCY_IDX)
+        );
     }
 
     private ValueRange getNewCategoryValueRange(Category category) {
@@ -121,6 +128,7 @@ public class GSheetsServiceImpl implements GSheetsService {
 
     /**
      * Creates an authorized Credential object.
+     *
      * @param HTTP_TRANSPORT The network HTTP Transport.
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.

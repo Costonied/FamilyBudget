@@ -6,8 +6,17 @@ public class GSheetsUtils {
         // hide constructor
     }
 
-    public static double getDoubleFromString(String stringWithDouble) {
-        String stringDoubleAfterReplace = stringWithDouble.replaceFirst(",", ".");
+    public static long getLongFromObj(Object object) {
+        return Long.parseLong(object.toString());
+    }
+
+    public static String getStringFromObj(Object object) {
+        return object.toString();
+    }
+
+    public static double getDoubleFromObj(Object object) {
+        String stringDoubleAfterReplace = object.toString()
+                .replaceFirst(",", ".");
         return Double.parseDouble(stringDoubleAfterReplace);
     }
 }
