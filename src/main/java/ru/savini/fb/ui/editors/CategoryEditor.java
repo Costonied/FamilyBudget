@@ -3,6 +3,7 @@ package ru.savini.fb.ui.editors;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.CategoryRepo;
+import ru.savini.fb.ui.helpers.CategoryHelper;
 
 import java.io.IOException;
 
@@ -28,7 +30,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     private final CategoryRepo repo;
 
     TextField name = new TextField("Category name");
-    TextField type = new TextField("Category type");
+    ComboBox<String> type;
 
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
@@ -57,7 +59,14 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void initBinder() {
+        initCategoryCodes();
+        binder.forField(type).bind(Category::getName, (t, a) -> t.setType(type.getValue()));
         binder.bindInstanceFields(this);
+    }
+
+    private void initCategoryCodes() {
+        type = new ComboBox<>("Category type");
+        type.setItems(CategoryHelper.getCategoryCode());
     }
 
     void save() {
@@ -94,6 +103,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
         // Could also use annotation or "manual binding" or programmatically
         // moving values from fields to entities before saving
         binder.setBean(this.category);
+        type.setValue(category.getType());
 
         setVisible(true);
 
