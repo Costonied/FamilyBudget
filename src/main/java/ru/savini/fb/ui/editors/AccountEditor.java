@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.gsheets.GSheetsService;
-import ru.savini.fb.repo.AccountRepository;
+import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.ui.helpers.AccountHelper;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.io.IOException;
 @UIScope
 public class AccountEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountEditor.class);
-    private final AccountRepository repository;
+    private final AccountRepo repository;
 
     /**
      * The currently edited customer
@@ -58,7 +58,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     private GSheetsService gSheets;
 
     @Autowired
-    public AccountEditor(AccountRepository repository, GSheetsService gSheets) {
+    public AccountEditor(AccountRepo repository, GSheetsService gSheets) {
         this.repository = repository;
         this.gSheets = gSheets;
         initBinder();

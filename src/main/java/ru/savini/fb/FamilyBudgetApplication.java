@@ -8,7 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.repo.AccountRepository;
+import ru.savini.fb.repo.AccountRepo;
 
 @SpringBootApplication
 public class FamilyBudgetApplication {
@@ -19,7 +19,7 @@ public class FamilyBudgetApplication {
     }
 
     @Bean
-    public CommandLineRunner loadData(AccountRepository repository) {
+    public CommandLineRunner loadData(AccountRepo repository) {
         return (args) -> {
             // save a couple of customers
 //            repository.save(new Account("Наличные", 10.0));

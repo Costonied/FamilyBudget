@@ -10,13 +10,13 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import org.springframework.util.StringUtils;
 import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.repo.AccountRepository;
+import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.ui.editors.AccountEditor;
 
 @Route("accounts")
 public class AccountView extends VerticalLayout {
 
-    private final AccountRepository repo;
+    private final AccountRepo repo;
 
     private final AccountEditor editor;
 
@@ -26,7 +26,7 @@ public class AccountView extends VerticalLayout {
 
     private final Button addNewBtn;
 
-    public AccountView(AccountRepository repo, AccountEditor editor) {
+    public AccountView(AccountRepo repo, AccountEditor editor) {
         this.repo = repo;
         this.editor = editor;
         this.grid = new Grid<>(Account.class);

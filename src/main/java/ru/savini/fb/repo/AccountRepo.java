@@ -5,7 +5,7 @@ import ru.savini.fb.domain.entity.Account;
 
 import java.util.List;
 
-public interface AccountRepository extends JpaRepository<Account, Long> {
+public interface AccountRepo extends JpaRepository<Account, Long> {
 
     List<Account> findByNameStartsWithIgnoreCase(String lastName);
 }
