@@ -10,7 +10,7 @@ public class Transaction {
     @Id
     @GeneratedValue(generator="TRANSACTION_GENERATOR")
     private Long id;
-    private Long categoryId;
+    private int categoryId;
     private Long accountId;
     private LocalDate date;
     private double amount;
@@ -20,7 +20,7 @@ public class Transaction {
         this.amount = 0.0;
         this.comment = "";
         this.accountId = 0L;
-        this.categoryId = 0L;
+        this.categoryId = 0;
         this.date = LocalDate.now();
     }
 
@@ -28,7 +28,7 @@ public class Transaction {
         return id;
     }
 
-    public Long getCategoryId() {
+    public int getCategoryId() {
         return categoryId;
     }
 
@@ -52,7 +52,7 @@ public class Transaction {
         this.id = id;
     }
 
-    public void setCategoryId(Long categoryId) {
+    public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
     }
 
