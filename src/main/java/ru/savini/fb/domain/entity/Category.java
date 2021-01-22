@@ -8,7 +8,7 @@ import javax.persistence.GeneratedValue;
 public class Category {
     @Id
     @GeneratedValue(generator="CATEGORY_GENERATOR")
-    private Long id;
+    private Integer id;
     private String name;
     private String type;
 
@@ -18,7 +18,7 @@ public class Category {
     public Category(String name, String type) {
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -30,7 +30,7 @@ public class Category {
         return type;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

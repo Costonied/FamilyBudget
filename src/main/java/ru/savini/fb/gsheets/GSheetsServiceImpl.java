@@ -128,7 +128,7 @@ public class GSheetsServiceImpl implements GSheetsService {
     }
 
     private String getCategoryNameForTransaction(Transaction transaction) {
-        Long categoryId = transaction.getCategoryId();
+        int categoryId = transaction.getCategoryId();
         Optional<Category> categoryResult = categoryRepo.findById(categoryId);
         if (categoryResult.isPresent()) {
             return categoryResult.get().getName();

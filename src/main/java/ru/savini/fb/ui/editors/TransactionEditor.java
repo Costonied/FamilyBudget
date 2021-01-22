@@ -8,6 +8,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToLongConverter;
@@ -16,8 +17,6 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.exceptions.NoSuchTransactionIdException;
 import ru.savini.fb.gsheets.GSheetsService;
@@ -25,7 +24,6 @@ import ru.savini.fb.repo.TransactionRepo;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Optional;
 
 @UIScope
 @SpringComponent
@@ -35,7 +33,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private Transaction transaction;
     private final TransactionRepo repo;
 
-    TextField categoryId = new TextField("Category ID");
+    IntegerField categoryId = new IntegerField("Category ID");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
     TextField accountId = new TextField("Account ID");
     TextField amount = new TextField("Amount");
@@ -73,9 +71,6 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         binder.forField(amount)
                 .withConverter(new StringToDoubleConverter("Must enter a double"))
                 .bind(Transaction::getAmount, Transaction::setAmount);
-        binder.forField(categoryId)
-                .withConverter(new StringToLongConverter("Must enter a long"))
-                .bind(Transaction::getCategoryId, Transaction::setCategoryId);
         binder.forField(accountId)
                 .withConverter(new StringToLongConverter("Must enter a long"))
                 .bind(Transaction::getAccountId, Transaction::setAccountId);
