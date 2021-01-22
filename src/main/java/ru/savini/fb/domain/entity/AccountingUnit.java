@@ -19,13 +19,15 @@ public class AccountingUnit {
     private int year;
     private int month;
     private int categoryId;
-    private double amount;
+    private double planAmount;
+    private double factAmount;
 
-    public AccountingUnit(Long id, int year, int month, int categoryId, double amount) {
+    public AccountingUnit(Long id, int year, int month, int categoryId, double planAmount, double factAmount) {
         this.id = id;
         this.year = year;
         this.month = month;
         this.categoryId = categoryId;
-        this.amount = amount;
+        this.planAmount = planAmount;
+        this.factAmount = factAmount;
     }
 }

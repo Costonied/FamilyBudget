@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.savini.fb.domain.entity.Account;
+import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.exceptions.NoSuchAccountIdException;
@@ -112,6 +113,12 @@ public class GSheetsServiceImpl implements GSheetsService {
         sendValueRange(transactionValueRange);
     }
 
+    @Override
+    public void addAccountingUnit(AccountingUnit accountingUnit) {
+        ValueRange accountingUnitRange = getNewAccountingUnitValueRange(accountingUnit);
+        sendValueRange(accountingUnitRange);
+    }
+
     private ValueRange getNewTransactionValueRange(Transaction transaction) {
         ValueRange valueRange = new ValueRange();
         valueRange.setRange(GSheetsInfo.TRANSACTIONS_RANGE);
@@ -119,7 +126,7 @@ public class GSheetsServiceImpl implements GSheetsService {
                 Arrays.asList(
                         transaction.getId(),
                         transaction.getCategoryId(),
-                        getCategoryNameForTransaction(transaction),
+                        getCategoryNameById(transaction.getCategoryId()),
                         transaction.getDate().toString(),
                         transaction.getAmount(),
                         transaction.getAccountId(),
@@ -127,8 +134,24 @@ public class GSheetsServiceImpl implements GSheetsService {
         return valueRange;
     }
 
-    private String getCategoryNameForTransaction(Transaction transaction) {
-        int categoryId = transaction.getCategoryId();
+    private ValueRange getNewAccountingUnitValueRange(AccountingUnit accountingUnit) {
+        ValueRange valueRange = new ValueRange();
+        valueRange.setRange(GSheetsInfo.ACCOUNTING_UNIT_RANGE);
+        valueRange.setValues(Collections.singletonList(
+                Arrays.asList(
+                        accountingUnit.getId(),
+                        accountingUnit.getCategoryId(),
+                        getCategoryNameById(accountingUnit.getCategoryId()),
+                        accountingUnit.getYear(),
+                        accountingUnit.getMonth(),
+                        accountingUnit.getPlanAmount(),
+                        accountingUnit.getFactAmount()
+                )
+        ));
+        return valueRange;
+    }
+
+    private String getCategoryNameById(int categoryId) {
         Optional<Category> categoryResult = categoryRepo.findById(categoryId);
         if (categoryResult.isPresent()) {
             return categoryResult.get().getName();
