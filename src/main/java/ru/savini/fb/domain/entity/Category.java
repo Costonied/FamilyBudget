@@ -1,10 +1,15 @@
 package ru.savini.fb.domain.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 
 @Entity
+@Getter
+@Setter
 public class Category {
     @Id
     @GeneratedValue(generator="CATEGORY_GENERATOR")
@@ -16,30 +21,6 @@ public class Category {
     }
 
     public Category(String name, String type) {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     @Override

@@ -1,11 +1,17 @@
 package ru.savini.fb.domain.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+
 import java.time.LocalDate;
 
 @Entity
+@Getter
+@Setter
 public class Transaction {
     @Id
     @GeneratedValue(generator="TRANSACTION_GENERATOR")
@@ -22,53 +28,5 @@ public class Transaction {
         this.accountId = 0L;
         this.categoryId = 0;
         this.date = LocalDate.now();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public int getCategoryId() {
-        return categoryId;
-    }
-
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public void setAccountId(Long accountId) {
-        this.accountId = accountId;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 }

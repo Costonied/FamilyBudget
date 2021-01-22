@@ -27,6 +27,7 @@
 		<google-api-client.version>1.30.4</google-api-client.version>
 		<google-oauth-client-jetty.version>1.30.6</google-oauth-client-jetty.version>
 		<google-api-services-sheets.version>v4-rev581-1.25.0</google-api-services-sheets.version>
+		<lombok.version>1.18.16</lombok.version>
 	</properties>
 
 	<dependencies>
@@ -74,6 +75,12 @@
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-sheets</artifactId>
 			<version>${google-api-services-sheets.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
