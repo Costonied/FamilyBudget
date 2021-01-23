@@ -3,6 +3,7 @@ package ru.savini.fb.ui.editors;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -33,10 +34,10 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private Transaction transaction;
     private final TransactionRepo repo;
 
+    TextField amount = new TextField("Amount");
+    TextField accountId = new TextField("Account ID");
     IntegerField categoryId = new IntegerField("Category ID");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
-    TextField accountId = new TextField("Account ID");
-    TextField amount = new TextField("Amount");
 
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
@@ -118,7 +119,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
         // Focus name initially
         amount.focus();
-        LOGGER.info("Edit transaction [{}]", transaction);
+        LOGGER.debug("Selected transaction [{}]", transaction);
     }
 
     public interface ChangeHandler {

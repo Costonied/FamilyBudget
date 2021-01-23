@@ -156,7 +156,7 @@ public class GSheetsServiceImpl implements GSheetsService {
         if (categoryResult.isPresent()) {
             return categoryResult.get().getName();
         } else {
-            throw new NoSuchCategoryIdException("Category ID: " + categoryId);
+            throw new NoSuchCategoryIdException();
         }
     }
 
