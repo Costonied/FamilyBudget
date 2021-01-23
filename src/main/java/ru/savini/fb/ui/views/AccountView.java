@@ -7,23 +7,23 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import org.springframework.util.StringUtils;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.ui.editors.AccountEditor;
 
-@Route("accounts")
+@Route(value = "accounts", layout = MainView.class)
+@PageTitle("Accounts")
+@RouteAlias(value = "", layout = MainView.class)
 public class AccountView extends VerticalLayout {
 
     private final AccountRepo repo;
-
     private final AccountEditor editor;
-
     final Grid<Account> grid;
-
     final TextField filter;
-
     private final Button addNewBtn;
 
     public AccountView(AccountRepo repo, AccountEditor editor) {

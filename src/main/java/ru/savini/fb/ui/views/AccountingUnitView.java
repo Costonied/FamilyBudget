@@ -1,16 +1,19 @@
 package ru.savini.fb.ui.views;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
-import ru.savini.fb.domain.entity.AccountingUnit;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+
 import ru.savini.fb.repo.AccountingUnitRepo;
+import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.ui.editors.AccountingUnitEditor;
 
-@Route("accounting")
+@PageTitle("Accounting")
+@Route(value = "accounting", layout = MainView.class)
 public class AccountingUnitView extends VerticalLayout {
 
     private final AccountingUnitRepo repo;

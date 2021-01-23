@@ -7,13 +7,15 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.util.StringUtils;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.repo.CategoryRepo;
 import ru.savini.fb.ui.editors.CategoryEditor;
 
-@Route("categories")
+@Route(value = "categories", layout = MainView.class)
+@PageTitle("Categories")
 public class CategoryView extends VerticalLayout {
 
     private final CategoryRepo repo;
