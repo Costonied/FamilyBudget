@@ -8,36 +8,22 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.domain.entity.Category;
-import ru.savini.fb.exceptions.NoSuchAccountingUnitIdException;
-import ru.savini.fb.exceptions.NoSuchCategoryIdException;
-import ru.savini.fb.repo.AccountRepo;
-import ru.savini.fb.repo.CategoryRepo;
 import ru.savini.fb.repo.TransactionRepo;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.ui.editors.TransactionEditor;
-
-import java.util.Optional;
 
 @Route(value = "transactions", layout = MainView.class)
 @PageTitle("Transactions")
 public class TransactionView extends VerticalLayout {
 
-    private final AccountRepo accountRepo;
-    private final CategoryRepo categoryRepo;
     private final TransactionRepo transactionRepo;
     private final TransactionEditor editor;
     final Grid<Transaction> grid;
     private final Button addNewBtn;
 
-    public TransactionView(AccountRepo accountRepo,
-                           TransactionEditor editor,
-                           CategoryRepo categoryRepo,
+    public TransactionView(TransactionEditor editor,
                            TransactionRepo transactionRepo) {
         this.editor = editor;
-        this.accountRepo = accountRepo;
-        this.categoryRepo = categoryRepo;
         this.transactionRepo = transactionRepo;
         this.grid = new Grid<>(Transaction.class, false);
         this.addNewBtn = new Button("New transaction", VaadinIcon.PLUS.create());
@@ -73,21 +59,7 @@ public class TransactionView extends VerticalLayout {
     }
 
     private void setGridColumns() {
-        grid.addColumn(this::getCategoryNameFromTrans).setHeader("Category");
-        grid.addColumns("date", "amount");
-        grid.addColumn(this::getAccountNameFromTrans).setHeader("Account");
-        grid.addColumn("comment");
-    }
-
-    private String getCategoryNameFromTrans(Transaction transaction) {
-        Optional<Category> optionalCategory = categoryRepo.findById(transaction.getCategoryId());
-        Category category = optionalCategory.orElseThrow(NoSuchCategoryIdException::new);
-        return category.getName();
-    }
-
-    private String getAccountNameFromTrans(Transaction transaction) {
-        Optional<Account> optionalAccount = accountRepo.findById(transaction.getAccountId());
-        Account account = optionalAccount.orElseThrow(NoSuchAccountingUnitIdException::new);
-        return account.getName();
+        grid.addColumns("category.name", "date",
+                "amount", "account.name", "comment");
     }
 }

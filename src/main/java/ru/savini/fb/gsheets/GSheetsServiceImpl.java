@@ -125,12 +125,12 @@ public class GSheetsServiceImpl implements GSheetsService {
         valueRange.setValues(Collections.singletonList(
                 Arrays.asList(
                         transaction.getId(),
-                        transaction.getCategoryId(),
-                        getCategoryNameById(transaction.getCategoryId()),
+                        transaction.getCategory().getId(),
+                        transaction.getCategory().getName(),
                         transaction.getDate().toString(),
                         transaction.getAmount(),
-                        transaction.getAccountId(),
-                        getAccountNameForTransaction(transaction))));
+                        transaction.getAccount().getId(),
+                        transaction.getAccount().getName())));
         return valueRange;
     }
 
@@ -141,7 +141,6 @@ public class GSheetsServiceImpl implements GSheetsService {
                 Arrays.asList(
                         accountingUnit.getId(),
                         accountingUnit.getCategoryId(),
-                        getCategoryNameById(accountingUnit.getCategoryId()),
                         accountingUnit.getYear(),
                         accountingUnit.getMonth(),
                         accountingUnit.getPlanAmount(),
@@ -149,25 +148,6 @@ public class GSheetsServiceImpl implements GSheetsService {
                 )
         ));
         return valueRange;
-    }
-
-    private String getCategoryNameById(int categoryId) {
-        Optional<Category> categoryResult = categoryRepo.findById(categoryId);
-        if (categoryResult.isPresent()) {
-            return categoryResult.get().getName();
-        } else {
-            throw new NoSuchCategoryIdException();
-        }
-    }
-
-    private String getAccountNameForTransaction(Transaction transaction) {
-        Long accountId = transaction.getAccountId();
-        Optional<Account> accountOptional = accountRepo.findById(accountId);
-        if (accountOptional.isPresent()) {
-            return accountOptional.get().getName();
-        } else {
-            throw new NoSuchAccountIdException("Account ID: " + accountId);
-        }
     }
 
     private List<List<Object>> getValuesOfDomain(String domain) {

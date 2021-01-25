@@ -1,5 +1,7 @@
 package ru.savini.fb.ui.editors;
 
+import lombok.NonNull;
+
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
@@ -9,22 +11,24 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
-import com.vaadin.flow.data.converter.StringToLongConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.savini.fb.domain.entity.Account;
+import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.exceptions.NoSuchTransactionIdException;
 import ru.savini.fb.gsheets.GSheetsService;
+import ru.savini.fb.repo.AccountRepo;
+import ru.savini.fb.repo.CategoryRepo;
 import ru.savini.fb.repo.TransactionRepo;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.io.IOException;
 
 @UIScope
 @SpringComponent
@@ -32,12 +36,14 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionEditor.class);
 
     private Transaction transaction;
-    private final TransactionRepo repo;
+    private final AccountRepo accountRepo;
+    private final CategoryRepo categoryRepo;
+    private final TransactionRepo transactionRepo;
 
     TextField amount = new TextField("Amount");
-    TextField accountId = new TextField("Account ID");
-    IntegerField categoryId = new IntegerField("Category ID");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
+    ComboBox<Account> account = new ComboBox<>("Account");
+    ComboBox<Category> category = new ComboBox<>("Category");
 
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
@@ -50,20 +56,31 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private ChangeHandler changeHandler;
 
     @Autowired
-    public TransactionEditor(TransactionRepo repo, GSheetsService gSheets) {
-        this.repo = repo;
+    public TransactionEditor(AccountRepo accountRepo,
+                             CategoryRepo categoryRepo,
+                             TransactionRepo transactionRepo,
+                             GSheetsService gSheets) {
         this.gSheets = gSheets;
+        this.accountRepo = accountRepo;
+        this.categoryRepo = categoryRepo;
+        this.transactionRepo = transactionRepo;
         initBinder();
-        add(categoryId, valueDatePicker, amount, accountId, actions);
+        add(category, valueDatePicker, amount, account, actions);
         setSpacing(true);
         save.getElement().getThemeList().add("primary");
         delete.getElement().getThemeList().add("error");
-        addKeyPressListener(Key.ENTER, e -> save());
         save.addClickListener(e -> save());
         delete.addClickListener(e -> delete());
-        cancel.addClickListener(e -> editTransaction(transaction));
+        cancel.addClickListener(e -> cancel());
+        addKeyPressListener(Key.ENTER, e -> save());
 
         valueDatePicker.setValue(LocalDate.now());
+
+        account.setItemLabelGenerator(Account::getName);
+        account.setItems(accountRepo.findAll());
+
+        category.setItemLabelGenerator(Category::getName);
+        category.setItems(categoryRepo.findAll());
 
         setVisible(false);
     }
@@ -72,15 +89,12 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         binder.forField(amount)
                 .withConverter(new StringToDoubleConverter("Must enter a double"))
                 .bind(Transaction::getAmount, Transaction::setAmount);
-        binder.forField(accountId)
-                .withConverter(new StringToLongConverter("Must enter a long"))
-                .bind(Transaction::getAccountId, Transaction::setAccountId);
         binder.bind(valueDatePicker, Transaction::getDate, Transaction::setDate);
         binder.bindInstanceFields(this);
     }
 
     void save() {
-        repo.save(transaction);
+        transactionRepo.save(transaction);
         changeHandler.onChange();
         try {
             // TODO: Сейчас даже при edit добавляется новая транзакция в GSheets.
@@ -92,33 +106,31 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void delete() {
-        repo.delete(transaction);
+        transactionRepo.delete(transaction);
         changeHandler.onChange();
     }
 
+    void cancel() {
+        setVisible(false);
+    }
+
     public final void editTransaction(Transaction transaction) {
+        // Transaction could be null after refresh
         if (transaction == null) {
             setVisible(false);
             return;
         }
-        final boolean persisted = transaction.getId() != null;
-        if (persisted) {
-            this.transaction = repo.findById(transaction.getId())
-                    .orElseThrow(NoSuchTransactionIdException::new);
-        } else {
-            this.transaction = transaction;
-        }
-        cancel.setVisible(persisted);
-
-        // Bind transaction properties to similarly named fields
-        // Could also use annotation or "manual binding" or programmatically
-        // moving values from fields to entities before saving
+        this.transaction = transaction;
         binder.setBean(this.transaction);
-
-        setVisible(true);
-
-        // Focus name initially
+        if (this.transaction.getCategory() != null) {
+            category.setValue(transaction.getCategory());
+        }
+        if (this.transaction.getAccount() != null) {
+            account.setValue(transaction.getAccount());
+        }
         amount.focus();
+        delete.setVisible(false);
+        setVisible(true);
         LOGGER.debug("Selected transaction [{}]", transaction);
     }
 

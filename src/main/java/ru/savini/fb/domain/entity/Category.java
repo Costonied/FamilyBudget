@@ -21,6 +21,8 @@ public class Category {
     }
 
     public Category(String name, String type) {
+        this.name = name;
+        this.type = type;
     }
 
     @Override

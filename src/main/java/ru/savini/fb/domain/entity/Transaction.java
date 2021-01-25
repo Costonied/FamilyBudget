@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.ManyToOne;
 
 import java.time.LocalDate;
 
@@ -16,17 +17,15 @@ public class Transaction {
     @Id
     @GeneratedValue(generator="TRANSACTION_GENERATOR")
     private Long id;
-    private int categoryId;
-    private Long accountId;
     private LocalDate date;
     private double amount;
     private String comment;
+    @ManyToOne private Category category;
+    @ManyToOne private Account account;
 
     public Transaction() {
         this.amount = 0.0;
         this.comment = "";
-        this.accountId = 0L;
-        this.categoryId = 0;
         this.date = LocalDate.now();
     }
 }
