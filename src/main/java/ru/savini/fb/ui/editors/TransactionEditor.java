@@ -41,6 +41,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private final TransactionRepo transactionRepo;
 
     TextField amount = new TextField("Amount");
+    TextField comment = new TextField("Comment");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
     ComboBox<Account> account = new ComboBox<>("Account");
     ComboBox<Category> category = new ComboBox<>("Category");
@@ -65,7 +66,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.categoryRepo = categoryRepo;
         this.transactionRepo = transactionRepo;
         initBinder();
-        add(category, valueDatePicker, amount, account, actions);
+        add(category, valueDatePicker, amount, account, comment, actions);
         setSpacing(true);
         save.getElement().getThemeList().add("primary");
         delete.getElement().getThemeList().add("error");
