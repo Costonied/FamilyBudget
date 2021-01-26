@@ -32,7 +32,7 @@ public class AccountingUnitView extends VerticalLayout {
         add(actions, grid, editor);
 
         grid.setHeight("300px");
-        grid.setColumns("id", "year", "month", "categoryId", "planAmount", "factAmount");
+        grid.setColumns("id", "year", "month", "category.name", "planAmount", "factAmount");
         grid.getColumnByKey("id").setWidth("50px").setFlexGrow(0);
 
         // Hook logic to components
@@ -41,7 +41,6 @@ public class AccountingUnitView extends VerticalLayout {
         grid.asSingleSelect()
                 .addValueChangeListener(e -> editor.editAccountingUnit(e.getValue()));
 
-        // Instantiate and edit new Category the new button is clicked
         addNewBtn.addClickListener(e -> editor.editAccountingUnit(new AccountingUnit()));
 
         // Listen changes made by the editor, refresh data from backend

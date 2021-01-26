@@ -3,6 +3,7 @@ package ru.savini.fb.ui.editors;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -15,9 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.domain.entity.AccountingUnit;
+import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.exceptions.NoSuchAccountingUnitIdException;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.AccountingUnitRepo;
+import ru.savini.fb.repo.CategoryRepo;
 
 import java.io.IOException;
 
@@ -28,12 +31,13 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
 
     private AccountingUnit accountingUnit;
     private final AccountingUnitRepo repo;
+    private final CategoryRepo categoryRepo;
 
     IntegerField year = new IntegerField("Year");
     IntegerField month = new IntegerField("Month");
-    IntegerField categoryId = new IntegerField("Category ID");
     NumberField planAmount = new NumberField("Plan amount");
     NumberField factAmount = new NumberField("Fact amount");
+    ComboBox<Category> category = new ComboBox<>("Category");
 
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
@@ -46,11 +50,14 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
     private ChangeHandler changeHandler;
 
     @Autowired
-    public AccountingUnitEditor(AccountingUnitRepo repo, GSheetsService gSheets) {
+    public AccountingUnitEditor(AccountingUnitRepo repo,
+                                CategoryRepo categoryRepo,
+                                GSheetsService gSheets) {
         this.repo = repo;
+        this.categoryRepo = categoryRepo;
         this.gSheets = gSheets;
         initBinder();
-        add(categoryId, year, month, planAmount, factAmount, actions);
+        add(category, year, month, planAmount, factAmount, actions);
         setSpacing(true);
         save.getElement().getThemeList().add("primary");
         delete.getElement().getThemeList().add("error");
@@ -58,6 +65,10 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         save.addClickListener(e -> save());
         delete.addClickListener(e -> delete());
         cancel.addClickListener(e -> editAccountingUnit(accountingUnit));
+
+        category.setItemLabelGenerator(Category::getName);
+        category.setItems(categoryRepo.findAll());
+
         setVisible(false);
     }
 
@@ -89,6 +100,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         if (persisted) {
             this.accountingUnit = repo.findById(accountingUnit.getId())
                     .orElseThrow(NoSuchAccountingUnitIdException::new);
+            category.setValue(this.accountingUnit.getCategory());
         } else {
             this.accountingUnit = accountingUnit;
         }

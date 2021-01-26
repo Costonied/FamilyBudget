@@ -140,7 +140,7 @@ public class GSheetsServiceImpl implements GSheetsService {
         valueRange.setValues(Collections.singletonList(
                 Arrays.asList(
                         accountingUnit.getId(),
-                        accountingUnit.getCategoryId(),
+                        accountingUnit.getCategory().getId(),
                         accountingUnit.getYear(),
                         accountingUnit.getMonth(),
                         accountingUnit.getPlanAmount(),
