@@ -42,7 +42,7 @@ public class TransactionView extends VerticalLayout {
                 .addValueChangeListener(e -> editor.editTransaction(e.getValue()));
 
         // Instantiate and edit new Category the new button is clicked
-        addNewBtn.addClickListener(e -> editor.editTransaction(new Transaction()));
+        addNewBtn.addClickListener(e -> editor.addTransaction(new Transaction()));
 
         // Listen changes made by the editor, refresh data from backend
         editor.setChangeHandler(() -> {

@@ -1,7 +1,5 @@
 package ru.savini.fb.ui.editors;
 
-import lombok.NonNull;
-
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
@@ -21,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
-import ru.savini.fb.exceptions.NoSuchTransactionIdException;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.repo.CategoryRepo;
@@ -123,16 +120,21 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         }
         this.transaction = transaction;
         binder.setBean(this.transaction);
-        if (this.transaction.getCategory() != null) {
-            category.setValue(transaction.getCategory());
-        }
-        if (this.transaction.getAccount() != null) {
-            account.setValue(transaction.getAccount());
-        }
+        category.setValue(transaction.getCategory());
+        account.setValue(transaction.getAccount());
         amount.focus();
-        delete.setVisible(false);
+        cancel.setVisible(true);
+        delete.setVisible(true);
         setVisible(true);
         LOGGER.debug("Selected transaction [{}]", transaction);
+    }
+
+    public final void addTransaction(Transaction transaction) {
+        this.transaction = transaction;
+        binder.setBean(this.transaction);
+        cancel.setVisible(true);
+        delete.setVisible(false);
+        setVisible(true);
     }
 
     public interface ChangeHandler {
