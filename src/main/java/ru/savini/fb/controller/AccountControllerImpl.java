@@ -1,5 +1,6 @@
 package ru.savini.fb.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -36,6 +37,16 @@ public class AccountControllerImpl implements AccountController {
     @Override
     public void withdrawMoney(double moneyAmount, Account account) {
 
+    }
+
+    @Override
+    public List<Account> getAll() {
+        return repository.findAll();
+    }
+
+    @Override
+    public List<Account> getByNameStartsWithIgnoreCase(String name) {
+        return repository.findByNameStartsWithIgnoreCase(name);
     }
 
     @Override

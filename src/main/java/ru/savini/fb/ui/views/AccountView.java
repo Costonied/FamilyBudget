@@ -11,26 +11,27 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import org.springframework.util.StringUtils;
+
 import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.ui.editors.AccountEditor;
+import ru.savini.fb.controller.AccountController;
 
 @Route(value = "accounts", layout = MainView.class)
 @PageTitle("Accounts")
 @RouteAlias(value = "", layout = MainView.class)
 public class AccountView extends VerticalLayout {
 
-    private final AccountRepo repo;
+    private final AccountController accountController;
     private final AccountEditor editor;
     final Grid<Account> grid;
     final TextField filter;
     private final Button addNewBtn;
 
-    public AccountView(AccountRepo repo, AccountEditor editor) {
-        this.repo = repo;
+    public AccountView(AccountController accountController, AccountEditor editor) {
         this.editor = editor;
-        this.grid = new Grid<>(Account.class);
         this.filter = new TextField();
+        this.grid = new Grid<>(Account.class);
+        this.accountController = accountController;
         this.addNewBtn = new Button("New account", VaadinIcon.PLUS.create());
 
         // build layout
@@ -70,10 +71,10 @@ public class AccountView extends VerticalLayout {
     // tag::listCustomers[]
     void listAccounts(String filterText) {
         if (StringUtils.isEmpty(filterText)) {
-            grid.setItems(repo.findAll());
+            grid.setItems(accountController.getAll());
         }
         else {
-            grid.setItems(repo.findByNameStartsWithIgnoreCase(filterText));
+            grid.setItems(accountController.getByNameStartsWithIgnoreCase(filterText));
         }
     }
     // end::listCustomers[]
