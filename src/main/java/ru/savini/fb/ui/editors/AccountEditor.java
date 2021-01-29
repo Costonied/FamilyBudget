@@ -15,6 +15,7 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.AccountRepo;
@@ -34,7 +35,7 @@ import java.io.IOException;
 @UIScope
 public class AccountEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountEditor.class);
-    private final AccountRepo repository;
+    private final AccountController accountController;
 
     /**
      * The currently edited customer
@@ -58,8 +59,8 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     private GSheetsService gSheets;
 
     @Autowired
-    public AccountEditor(AccountRepo repository, GSheetsService gSheets) {
-        this.repository = repository;
+    public AccountEditor(AccountController accountController, GSheetsService gSheets) {
+        this.accountController = accountController;
         this.gSheets = gSheets;
         initBinder();
 
@@ -96,12 +97,12 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void delete() {
-        repository.delete(account);
+        accountController.delete(account);
         changeHandler.onChange();
     }
 
     void save() {
-        repository.save(account);
+        accountController.save(account);
         changeHandler.onChange();
         try {
             gSheets.addAccount(account);
@@ -122,7 +123,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         final boolean persisted = account.getId() != null;
         if (persisted) {
             // Find fresh entity for editing
-            this.account = repository.findById(account.getId()).get();
+            this.account = accountController.getById(account.getId());
         }
         else {
             this.account = account;
