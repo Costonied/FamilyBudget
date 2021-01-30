@@ -1,25 +1,25 @@
 package ru.savini.fb.ui.editors;
 
+import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.gsheets.GSheetsService;
-import ru.savini.fb.repo.CategoryRepo;
 import ru.savini.fb.ui.helpers.CategoryHelper;
-
-import java.io.IOException;
 
 @UIScope
 @SpringComponent
@@ -27,7 +27,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryEditor.class);
 
     private Category category;
-    private final CategoryRepo repo;
+    private final CategoryController categoryController;
 
     TextField name = new TextField("Category name");
     ComboBox<String> type;
@@ -43,8 +43,8 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     private ChangeHandler changeHandler;
 
     @Autowired
-    public CategoryEditor(CategoryRepo repo, GSheetsService gSheets) {
-        this.repo = repo;
+    public CategoryEditor(CategoryController categoryController, GSheetsService gSheets) {
+        this.categoryController = categoryController;
         this.gSheets = gSheets;
         initBinder();
         add(name, type, actions);
@@ -70,7 +70,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void save() {
-        repo.save(category);
+        categoryController.save(category);
         changeHandler.onChange();
         try {
             gSheets.addCategory(category);
@@ -80,7 +80,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void delete() {
-        repo.delete(category);
+        categoryController.delete(category);
         changeHandler.onChange();
     }
 
@@ -91,8 +91,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
         }
         final boolean persisted = category.getId() != null;
         if (persisted) {
-            // Find fresh entity for editing
-            this.category = repo.findById(category.getId()).get();
+            this.category = categoryController.getById(category.getId());
         }
         else {
             this.category = category;

@@ -1,34 +1,36 @@
 package ru.savini.fb.ui.views;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+
 import org.springframework.util.StringUtils;
+
 import ru.savini.fb.domain.entity.Category;
-import ru.savini.fb.repo.CategoryRepo;
 import ru.savini.fb.ui.editors.CategoryEditor;
+import ru.savini.fb.controller.CategoryController;
 
 @Route(value = "categories", layout = MainView.class)
 @PageTitle("Categories")
 public class CategoryView extends VerticalLayout {
 
-    private final CategoryRepo repo;
-    private final CategoryEditor editor;
     final Grid<Category> grid;
     final TextField filter;
     private final Button addNewBtn;
+    private final CategoryEditor editor;
+    private final CategoryController categoryController;
 
-    public CategoryView(CategoryRepo repo, CategoryEditor editor) {
-        this.repo = repo;
+    public CategoryView(CategoryController categoryController, CategoryEditor editor) {
         this.editor = editor;
-        this.grid = new Grid<>(Category.class);
         this.filter = new TextField();
+        this.grid = new Grid<>(Category.class);
+        this.categoryController = categoryController;
         this.addNewBtn = new Button("New category", VaadinIcon.PLUS.create());
 
         // build layout
@@ -66,10 +68,10 @@ public class CategoryView extends VerticalLayout {
     // tag::listCategories[]
     void listCategories(String filterText) {
         if (StringUtils.isEmpty(filterText)) {
-            grid.setItems(repo.findAll());
+            grid.setItems(categoryController.getAll());
         }
         else {
-            grid.setItems(repo.findByNameStartsWithIgnoreCase(filterText));
+            grid.setItems(categoryController.getByNameStartsWithIgnoreCase(filterText));
         }
     }
     // end::listCategories[]
