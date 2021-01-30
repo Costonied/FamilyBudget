@@ -8,21 +8,21 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-import ru.savini.fb.repo.AccountingUnitRepo;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.ui.editors.AccountingUnitEditor;
+import ru.savini.fb.controller.AccountingUnitController;
 
 @PageTitle("Accounting")
 @Route(value = "accounting", layout = MainView.class)
 public class AccountingUnitView extends VerticalLayout {
 
-    private final AccountingUnitRepo repo;
+    private final AccountingUnitController accountingUnitController;
     private final AccountingUnitEditor editor;
     final Grid<AccountingUnit> grid;
     private final Button addNewBtn;
 
-    public AccountingUnitView(AccountingUnitRepo repo, AccountingUnitEditor editor) {
-        this.repo = repo;
+    public AccountingUnitView(AccountingUnitController accountingUnitController, AccountingUnitEditor editor) {
+        this.accountingUnitController = accountingUnitController;
         this.editor = editor;
         this.grid = new Grid<>(AccountingUnit.class);
         this.addNewBtn = new Button("New accounting unit", VaadinIcon.PLUS.create());
@@ -54,6 +54,6 @@ public class AccountingUnitView extends VerticalLayout {
     }
 
     void listAccountingUnits() {
-        grid.setItems(repo.findAll());
+        grid.setItems(accountingUnitController.getAll());
     }
 }

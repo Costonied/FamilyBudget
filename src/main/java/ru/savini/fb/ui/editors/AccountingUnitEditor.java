@@ -1,5 +1,11 @@
 package ru.savini.fb.ui.editors;
 
+import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
@@ -9,20 +15,13 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.spring.annotation.SpringComponent;
-import com.vaadin.flow.spring.annotation.UIScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import ru.savini.fb.controller.AccountingUnitController;
+import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.Category;
-import ru.savini.fb.exceptions.NoSuchAccountingUnitIdException;
 import ru.savini.fb.gsheets.GSheetsService;
-import ru.savini.fb.repo.AccountingUnitRepo;
-import ru.savini.fb.repo.CategoryRepo;
-
-import java.io.IOException;
 
 @UIScope
 @SpringComponent
@@ -30,8 +29,8 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountingUnitEditor.class);
 
     private AccountingUnit accountingUnit;
-    private final AccountingUnitRepo repo;
-    private final CategoryRepo categoryRepo;
+    private final CategoryController categoryController;
+    private final AccountingUnitController accountingUnitController;
 
     IntegerField year = new IntegerField("Year");
     IntegerField month = new IntegerField("Month");
@@ -50,11 +49,11 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
     private ChangeHandler changeHandler;
 
     @Autowired
-    public AccountingUnitEditor(AccountingUnitRepo repo,
-                                CategoryRepo categoryRepo,
+    public AccountingUnitEditor(AccountingUnitController accountingUnitController,
+                                CategoryController categoryController,
                                 GSheetsService gSheets) {
-        this.repo = repo;
-        this.categoryRepo = categoryRepo;
+        this.accountingUnitController = accountingUnitController;
+        this.categoryController = categoryController;
         this.gSheets = gSheets;
         initBinder();
         add(category, year, month, planAmount, factAmount, actions);
@@ -67,7 +66,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         cancel.addClickListener(e -> editAccountingUnit(accountingUnit));
 
         category.setItemLabelGenerator(Category::getName);
-        category.setItems(categoryRepo.findAll());
+        category.setItems(categoryController.getAll());
 
         setVisible(false);
     }
@@ -77,7 +76,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
     }
 
     void save() {
-        repo.save(accountingUnit);
+        accountingUnitController.save(accountingUnit);
         changeHandler.onChange();
         try {
             gSheets.addAccountingUnit(accountingUnit);
@@ -87,7 +86,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
     }
 
     void delete() {
-        repo.delete(accountingUnit);
+        accountingUnitController.delete(accountingUnit);
         changeHandler.onChange();
     }
 
@@ -98,8 +97,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         }
         final boolean persisted = accountingUnit.getId() != null;
         if (persisted) {
-            this.accountingUnit = repo.findById(accountingUnit.getId())
-                    .orElseThrow(NoSuchAccountingUnitIdException::new);
+            this.accountingUnit = accountingUnitController.getById(accountingUnit.getId());
             category.setValue(this.accountingUnit.getCategory());
         } else {
             this.accountingUnit = accountingUnit;
