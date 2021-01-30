@@ -1,5 +1,9 @@
 package ru.savini.fb.ui.editors;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
@@ -13,19 +17,15 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
-import ru.savini.fb.gsheets.GSheetsService;
-import ru.savini.fb.repo.AccountRepo;
-import ru.savini.fb.repo.CategoryRepo;
-import ru.savini.fb.repo.TransactionRepo;
-
-import java.time.LocalDate;
-import java.io.IOException;
+import ru.savini.fb.controller.AccountController;
+import ru.savini.fb.controller.CategoryController;
+import ru.savini.fb.controller.TransactionController;
 
 @UIScope
 @SpringComponent
@@ -33,9 +33,9 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionEditor.class);
 
     private Transaction transaction;
-    private final AccountRepo accountRepo;
-    private final CategoryRepo categoryRepo;
-    private final TransactionRepo transactionRepo;
+    private final AccountController accountController;
+    private final CategoryController categoryController;
+    private final TransactionController transactionController;
 
     TextField amount = new TextField("Amount");
     TextField comment = new TextField("Comment");
@@ -54,14 +54,14 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private ChangeHandler changeHandler;
 
     @Autowired
-    public TransactionEditor(AccountRepo accountRepo,
-                             CategoryRepo categoryRepo,
-                             TransactionRepo transactionRepo,
+    public TransactionEditor(AccountController accountController,
+                             CategoryController categoryController,
+                             TransactionController transactionController,
                              GSheetsService gSheets) {
         this.gSheets = gSheets;
-        this.accountRepo = accountRepo;
-        this.categoryRepo = categoryRepo;
-        this.transactionRepo = transactionRepo;
+        this.accountController = accountController;
+        this.categoryController = categoryController;
+        this.transactionController = transactionController;
         initBinder();
         add(category, valueDatePicker, amount, account, comment, actions);
         setSpacing(true);
@@ -75,10 +75,10 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         valueDatePicker.setValue(LocalDate.now());
 
         account.setItemLabelGenerator(Account::getName);
-        account.setItems(accountRepo.findAll());
+        account.setItems(accountController.getAll());
 
         category.setItemLabelGenerator(Category::getName);
-        category.setItems(categoryRepo.findAll());
+        category.setItems(categoryController.getAll());
 
         setVisible(false);
     }
@@ -92,7 +92,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void save() {
-        transactionRepo.save(transaction);
+        transactionController.save(transaction);
         changeHandler.onChange();
         try {
             // TODO: Сейчас даже при edit добавляется новая транзакция в GSheets.
@@ -104,7 +104,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void delete() {
-        transactionRepo.delete(transaction);
+        transactionController.delete(transaction);
         changeHandler.onChange();
     }
 
