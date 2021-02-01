@@ -31,12 +31,18 @@ public class AccountControllerImpl implements AccountController {
 
     @Override
     public void putMoney(double moneyAmount, Account account) {
-
+        double currentAmount = account.getAmount();
+        double newAmount = currentAmount + moneyAmount;
+        account.setAmount(newAmount);
+        this.save(account);
     }
 
     @Override
     public void withdrawMoney(double moneyAmount, Account account) {
-
+        double currentAmount = account.getAmount();
+        double newAmount = currentAmount - moneyAmount;
+        account.setAmount(newAmount);
+        this.save(account);
     }
 
     @Override

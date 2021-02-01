@@ -1,13 +1,16 @@
 package ru.savini.fb.controller;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.repo.CategoryRepo;
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.exceptions.NoSuchCategoryIdException;
 
 @Component
@@ -43,5 +46,25 @@ public class CategoryControllerImpl implements CategoryController {
     @Override
     public List<Category> getByNameStartsWithIgnoreCase(String name) {
         return categoryRepo.findByNameStartsWithIgnoreCase(name);
+    }
+
+    @Override
+    public List<String> getCategoryCodes() {
+        List<CategoryCode> enumCodes = Arrays.asList(CategoryCode.values());
+        return enumCodes.stream()
+                .map(CategoryCode::getCode)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isIncome(Category category) {
+        String income = CategoryCode.INCOME.getCode();
+        return category.getType().equalsIgnoreCase(income);
+    }
+
+    @Override
+    public boolean isOutgoing(Category category) {
+        String outgo = CategoryCode.OUTGO.getCode();
+        return category.getType().equalsIgnoreCase(outgo);
     }
 }

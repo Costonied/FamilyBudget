@@ -53,7 +53,7 @@ public class MainView extends AppLayout {
         HorizontalLayout logoLayout = new HorizontalLayout();
         logoLayout.setId("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoLayout.add(new H1("Family budget"));
+        logoLayout.add(new H1("FB"));
         layout.add(logoLayout, menu);
         return layout;
     }

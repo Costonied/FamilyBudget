@@ -16,10 +16,9 @@ import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.gsheets.GSheetsService;
-import ru.savini.fb.ui.helpers.CategoryHelper;
+import ru.savini.fb.controller.CategoryController;
 
 @UIScope
 @SpringComponent
@@ -66,7 +65,7 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
 
     private void initCategoryCodes() {
         type = new ComboBox<>("Category type");
-        type.setItems(CategoryHelper.getCategoryCode());
+        type.setItems(categoryController.getCategoryCodes());
     }
 
     void save() {

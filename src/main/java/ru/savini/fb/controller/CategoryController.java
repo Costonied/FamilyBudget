@@ -11,4 +11,9 @@ public interface CategoryController {
     Category getById(int categoryId);
     List<Category> getAll();
     List<Category> getByNameStartsWithIgnoreCase(String name);
+
+    List<String> getCategoryCodes();
+
+    boolean isIncome(Category category);
+    boolean isOutgoing(Category category);
 }
