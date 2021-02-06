@@ -75,10 +75,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         valueDatePicker.setValue(LocalDate.now());
 
         account.setItemLabelGenerator(Account::getName);
-        account.setItems(accountController.getAll());
-
         category.setItemLabelGenerator(Category::getName);
-        category.setItems(categoryController.getAll());
 
         setVisible(false);
     }
@@ -118,6 +115,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
             setVisible(false);
             return;
         }
+        this.refreshComboBoxData();
         this.transaction = transaction;
         binder.setBean(this.transaction);
         category.setValue(transaction.getCategory());
@@ -130,6 +128,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     public final void addTransaction(Transaction transaction) {
+        this.refreshComboBoxData();
         this.transaction = transaction;
         binder.setBean(this.transaction);
         cancel.setVisible(true);
@@ -145,5 +144,10 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         // ChangeHandler is notified when either save or delete
         // is clicked
         changeHandler = h;
+    }
+
+    private void refreshComboBoxData() {
+        account.setItems(accountController.getAll());
+        category.setItems(categoryController.getAll());
     }
 }
