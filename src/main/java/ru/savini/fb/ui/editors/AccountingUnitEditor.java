@@ -64,10 +64,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         save.addClickListener(e -> save());
         delete.addClickListener(e -> delete());
         cancel.addClickListener(e -> editAccountingUnit(accountingUnit));
-
         category.setItemLabelGenerator(Category::getName);
-        category.setItems(categoryController.getAll());
-
         setVisible(false);
     }
 
@@ -95,6 +92,7 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
             setVisible(false);
             return;
         }
+        this.refreshComboBox();
         final boolean persisted = accountingUnit.getId() != null;
         if (persisted) {
             this.accountingUnit = accountingUnitController.getById(accountingUnit.getId());
@@ -124,5 +122,9 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         // ChangeHandler is notified when either save or delete
         // is clicked
         changeHandler = h;
+    }
+
+    private void refreshComboBox() {
+        category.setItems(categoryController.getAll());
     }
 }
