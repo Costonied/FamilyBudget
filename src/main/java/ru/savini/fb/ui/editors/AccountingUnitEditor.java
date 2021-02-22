@@ -21,7 +21,6 @@ import ru.savini.fb.controller.AccountingUnitController;
 import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.Category;
-import ru.savini.fb.gsheets.GSheetsService;
 
 @UIScope
 @SpringComponent
@@ -45,16 +44,13 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
 
     Binder<AccountingUnit> binder = new Binder<>(AccountingUnit.class);
 
-    private GSheetsService gSheets;
     private ChangeHandler changeHandler;
 
     @Autowired
     public AccountingUnitEditor(AccountingUnitController accountingUnitController,
-                                CategoryController categoryController,
-                                GSheetsService gSheets) {
+                                CategoryController categoryController) {
         this.accountingUnitController = accountingUnitController;
         this.categoryController = categoryController;
-        this.gSheets = gSheets;
         initBinder();
         add(category, year, month, planAmount, factAmount, actions);
         setSpacing(true);
@@ -75,11 +71,6 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
     void save() {
         accountingUnitController.save(accountingUnit);
         changeHandler.onChange();
-        try {
-            gSheets.addAccountingUnit(accountingUnit);
-        } catch (IOException e) {
-            LOGGER.error("Problem save accounting unit to Google Sheets");
-        }
     }
 
     void delete() {

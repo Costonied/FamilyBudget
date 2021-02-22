@@ -14,42 +14,29 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.domain.entity.AccountingUnit;
-import ru.savini.fb.domain.entity.Category;
+
 import ru.savini.fb.domain.entity.Transaction;
-import ru.savini.fb.exceptions.NoSuchAccountIdException;
-import ru.savini.fb.exceptions.NoSuchCategoryIdException;
-import ru.savini.fb.exceptions.ReadingValueRangeException;
 import ru.savini.fb.exceptions.WritingValueRangeException;
-import ru.savini.fb.repo.AccountRepo;
-import ru.savini.fb.repo.CategoryRepo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import static ru.savini.fb.gsheets.GSheetsUtils.getLongFromObj;
-import static ru.savini.fb.gsheets.GSheetsUtils.getStringFromObj;
-import static ru.savini.fb.gsheets.GSheetsUtils.getDoubleFromObj;
 
 @Service
 public class GSheetsServiceImpl implements GSheetsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GSheetsServiceImpl.class);
 
     private static final String APPLICATION_NAME = "Google Sheets API Family Budget";
-    private static final String SPREADSHEET_ID = "1BB-MFczIhtcZdYPUS9htPEpMsu-vxCDaFcQ4qsjWqgY";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
@@ -61,14 +48,9 @@ public class GSheetsServiceImpl implements GSheetsService {
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     Sheets service;
-    private final CategoryRepo categoryRepo;
-    private final AccountRepo accountRepo;
 
     @Autowired
-    public GSheetsServiceImpl(CategoryRepo categoryRepo, AccountRepo accountRepo)
-            throws GeneralSecurityException, IOException {
-        this.accountRepo = accountRepo;
-        this.categoryRepo = categoryRepo;
+    public GSheetsServiceImpl() throws GeneralSecurityException, IOException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         this.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
@@ -76,47 +58,9 @@ public class GSheetsServiceImpl implements GSheetsService {
     }
 
     @Override
-    public void addAccount(Account account) throws IOException {
-        ValueRange accountValueRange = getNewAccountValueRange(account);
-        sendValueRange(accountValueRange);
-    }
-
-    private ValueRange getNewAccountValueRange(Account account) {
-        ValueRange valueRange = new ValueRange();
-        valueRange.setRange(GSheetsInfo.ACCOUNTS_RANGE);
-        valueRange.setValues(Collections.singletonList(
-                Arrays.asList(
-                        account.getId(), account.getName(),
-                        account.getAmount(), account.getCurrency())));
-        return valueRange;
-    }
-
-    @Override
-    public List<Account> getAccounts() {
-        List<Account> accounts = new ArrayList<>();
-        List<List<Object>> accountsValue = getValuesOfDomain(GSheetsInfo.ACCOUNTS_RANGE);
-        for (List<Object> row : accountsValue) {
-            accounts.add(createAccFromRow(row));
-        }
-        return accounts;
-    }
-
-    @Override
-    public void addCategory(Category category) {
-        ValueRange categoryValueRange = getNewCategoryValueRange(category);
-        sendValueRange(categoryValueRange);
-    }
-
-    @Override
     public void addTransaction(Transaction transaction) {
         ValueRange transactionValueRange = getNewTransactionValueRange(transaction);
         sendValueRange(transactionValueRange);
-    }
-
-    @Override
-    public void addAccountingUnit(AccountingUnit accountingUnit) {
-        ValueRange accountingUnitRange = getNewAccountingUnitValueRange(accountingUnit);
-        sendValueRange(accountingUnitRange);
     }
 
     private ValueRange getNewTransactionValueRange(Transaction transaction) {
@@ -134,35 +78,6 @@ public class GSheetsServiceImpl implements GSheetsService {
         return valueRange;
     }
 
-    private ValueRange getNewAccountingUnitValueRange(AccountingUnit accountingUnit) {
-        ValueRange valueRange = new ValueRange();
-        valueRange.setRange(GSheetsInfo.ACCOUNTING_UNIT_RANGE);
-        valueRange.setValues(Collections.singletonList(
-                Arrays.asList(
-                        accountingUnit.getId(),
-                        accountingUnit.getCategory().getId(),
-                        accountingUnit.getYear(),
-                        accountingUnit.getMonth(),
-                        accountingUnit.getPlanAmount(),
-                        accountingUnit.getFactAmount()
-                )
-        ));
-        return valueRange;
-    }
-
-    private List<List<Object>> getValuesOfDomain(String domain) {
-        try {
-            ValueRange domainValueRange = this.service
-                    .spreadsheets().values()
-                    .get(GSheetsInfo.SPREADSHEET_ID, domain)
-                    .execute();
-            List<List<Object>> result = domainValueRange.getValues();
-            return result != null ? result : Collections.singletonList(Collections.emptyList());
-        } catch (IOException e) {
-            throw new ReadingValueRangeException(String.format("Problem while get '%s'", domain));
-        }
-    }
-
     private void sendValueRange(ValueRange valueRange) {
         try {
             service.spreadsheets().values()
@@ -175,25 +90,6 @@ public class GSheetsServiceImpl implements GSheetsService {
         } catch (IOException e) {
             throw new WritingValueRangeException("Range is:" + valueRange.getRange());
         }
-    }
-
-    private Account createAccFromRow(List<Object> row) {
-        return new Account(
-                getLongFromObj(row.get(GSheetsInfo.ACCOUNT_ID_IDX)),
-                getStringFromObj(row.get(GSheetsInfo.ACCOUNT_NAME_IDX)),
-                getDoubleFromObj(row.get(GSheetsInfo.ACCOUNT_AMOUNT_IDX)),
-                getStringFromObj(GSheetsInfo.ACCOUNT_CURRENCY_IDX)
-        );
-    }
-
-    private ValueRange getNewCategoryValueRange(Category category) {
-        ValueRange valueRange = new ValueRange();
-        valueRange.setMajorDimension("ROWS");
-        valueRange.setRange("Categories!A2:C");
-        valueRange.setValues(Collections.singletonList(
-                Arrays.asList(
-                        category.getId(), category.getName(), category.getType())));
-        return valueRange;
     }
 
     /**
