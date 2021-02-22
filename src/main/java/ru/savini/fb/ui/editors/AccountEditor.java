@@ -17,11 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.gsheets.GSheetsService;
-import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.ui.helpers.AccountHelper;
-
-import java.io.IOException;
 
 /**
  * A simple example to introduce building forms. As your real application is probably much
@@ -56,12 +52,10 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     Binder<Account> binder = new Binder<>(Account.class);
 
     private ChangeHandler changeHandler;
-    private GSheetsService gSheets;
 
     @Autowired
-    public AccountEditor(AccountController accountController, GSheetsService gSheets) {
+    public AccountEditor(AccountController accountController) {
         this.accountController = accountController;
-        this.gSheets = gSheets;
         initBinder();
 
         add(name, amount, currency, actions);
@@ -104,11 +98,6 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     void save() {
         accountController.save(account);
         changeHandler.onChange();
-        try {
-            gSheets.addAccount(account);
-        } catch (IOException e) {
-            LOGGER.error("Problem save account to Google Sheets");
-        }
     }
 
     public interface ChangeHandler {

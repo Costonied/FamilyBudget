@@ -17,7 +17,6 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.domain.entity.Category;
-import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.controller.CategoryController;
 
 @UIScope
@@ -38,13 +37,11 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
 
     Binder<Category> binder = new Binder<>(Category.class);
 
-    private GSheetsService gSheets;
     private ChangeHandler changeHandler;
 
     @Autowired
-    public CategoryEditor(CategoryController categoryController, GSheetsService gSheets) {
+    public CategoryEditor(CategoryController categoryController) {
         this.categoryController = categoryController;
-        this.gSheets = gSheets;
         initBinder();
         add(name, type, actions);
         setSpacing(true);
@@ -71,11 +68,6 @@ public class CategoryEditor extends VerticalLayout implements KeyNotifier {
     void save() {
         categoryController.save(category);
         changeHandler.onChange();
-        try {
-            gSheets.addCategory(category);
-        } catch (IOException e) {
-            LOGGER.error("Problem save category to Google Sheets");
-        }
     }
 
     void delete() {
