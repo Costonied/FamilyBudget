@@ -4,12 +4,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.domain.entity.AccountingUnit;
+import ru.savini.fb.domain.enums.CategoryCode;
+import ru.savini.fb.domain.enums.TransactionType;
 import ru.savini.fb.repo.TransactionRepo;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -33,6 +36,7 @@ public class TransactionControllerImpl implements TransactionController {
 
     @Override
     public void save(Transaction transaction) {
+        setTransactionType(transaction);
         transactionRepo.save(transaction);
         changeAccountAmount(transaction);
         changeAccountingUnitFactAmount(transaction);
@@ -68,5 +72,14 @@ public class TransactionControllerImpl implements TransactionController {
         AccountingUnit accountingUnit = accountingUnitController
                 .getByCategoryAndLocalDate(transCategory, transDate);
         accountingUnitController.increaseFactAmount(accountingUnit, transAmount);
+    }
+
+    private void setTransactionType(Transaction transaction) {
+        String transCategoryType = transaction.getCategory().getType();
+        if (transCategoryType.equalsIgnoreCase(CategoryCode.OUTGO.getCode())) {
+            transaction.setType(TransactionType.DEBIT.getType());
+        } else if (transCategoryType.equalsIgnoreCase(CategoryCode.INCOME.getCode())) {
+            transaction.setType(TransactionType.CREDIT.getType());
+        }
     }
 }
