@@ -44,8 +44,14 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
 
     @Override
     public AccountingUnit getByCategoryAndLocalDate(Category category, LocalDate localDate) {
+        int year = localDate.getYear();
         int month = localDate.getMonthValue();
-        return accountingUnitRepo.findByCategoryAndMonth(category, month);
+        AccountingUnit accountingUnit = accountingUnitRepo.findByCategoryAndYearAndMonth(category, year, month);
+        if (accountingUnit == null) {
+            accountingUnit = getNewEmptyAccountingUnit(category, year, month);
+            save(accountingUnit);
+        }
+        return accountingUnit;
     }
 
     @Override
@@ -54,5 +60,13 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
         double newFactAmount = currentFactAmount + amount;
         accountingUnit.setFactAmount(newFactAmount);
         save(accountingUnit);
+    }
+
+    private AccountingUnit getNewEmptyAccountingUnit(Category category, int year, int month) {
+        AccountingUnit newAccountingUnit = new AccountingUnit();
+        newAccountingUnit.setYear(year);
+        newAccountingUnit.setMonth(month);
+        newAccountingUnit.setCategory(category);
+        return newAccountingUnit;
     }
 }
