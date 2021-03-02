@@ -19,6 +19,7 @@ public class Transaction {
     private Long id;
     private LocalDate date;
     private double amount;
+    private String type;
     private String comment;
     @ManyToOne private Category category;
     @ManyToOne private Account account;
