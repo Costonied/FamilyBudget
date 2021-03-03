@@ -68,13 +68,12 @@ public class GSheetsServiceImpl implements GSheetsService {
         valueRange.setRange(GSheetsInfo.TRANSACTIONS_RANGE);
         valueRange.setValues(Collections.singletonList(
                 Arrays.asList(
-                        transaction.getId(),
-                        transaction.getCategory().getId(),
                         transaction.getCategory().getName(),
                         transaction.getDate().toString(),
                         transaction.getAmount(),
-                        transaction.getAccount().getId(),
-                        transaction.getAccount().getName())));
+                        transaction.getAccount().getName(),
+                        transaction.getType(),
+                        transaction.getComment())));
         return valueRange;
     }
 
