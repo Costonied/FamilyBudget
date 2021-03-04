@@ -29,4 +29,11 @@ public class Transaction {
         this.comment = "";
         this.date = LocalDate.now();
     }
+
+    public Transaction(Transaction fromTransaction) {
+        this.date = fromTransaction.getDate();
+        this.amount = fromTransaction.getAmount();
+        this.comment = fromTransaction.getComment();
+        this.category = fromTransaction.getCategory();
+    }
 }

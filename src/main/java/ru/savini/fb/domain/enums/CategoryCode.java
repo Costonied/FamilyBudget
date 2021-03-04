@@ -1,7 +1,9 @@
 package ru.savini.fb.domain.enums;
 
+import ru.savini.fb.domain.entity.Category;
+
 public enum CategoryCode {
-    INCOME("INCOME"), OUTGO("OUTGO");
+    INCOME("INCOME"), OUTGO("OUTGO"), GOALS("GOALS");
 
     private String code;
 
@@ -11,5 +13,9 @@ public enum CategoryCode {
 
     public String getCode() {
         return code;
+    }
+
+    public static boolean isGoalsCategory(Category category) {
+        return category.getType().equals(CategoryCode.GOALS.getCode());
     }
 }
