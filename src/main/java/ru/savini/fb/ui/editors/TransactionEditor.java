@@ -2,7 +2,6 @@ package ru.savini.fb.ui.editors;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.io.IOException;
 import java.time.LocalDate;
 
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.enums.CategoryCode;
@@ -53,15 +51,12 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     Button delete = new Button("Delete", VaadinIcon.TRASH.create());
     HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
 
-    private GSheetsService gSheets;
     private ChangeHandler changeHandler;
 
     @Autowired
     public TransactionEditor(AccountController accountController,
                              CategoryController categoryController,
-                             TransactionController transactionController,
-                             GSheetsService gSheets) {
-        this.gSheets = gSheets;
+                             TransactionController transactionController) {
         this.accountController = accountController;
         this.categoryController = categoryController;
         this.transactionController = transactionController;
@@ -86,11 +81,6 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         bindUiElementsWithTransaction();
         transactionController.save(transaction, creditAccount.getValue());
         changeHandler.onChange();
-        try {
-            gSheets.addTransaction(transaction);
-        } catch (IOException e) {
-            LOGGER.error("Problem save category to Google Sheets");
-        }
     }
 
     void delete() {

@@ -1,30 +1,39 @@
 package ru.savini.fb.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.enums.TransactionType;
+import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.TransactionRepo;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
 @Component
 public class TransactionControllerImpl implements TransactionController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionControllerImpl.class);
+
+    private final GSheetsService gSheets;
     private final TransactionRepo transactionRepo;
     private final AccountController accountController;
     private final AccountingUnitController accountingUnitController;
 
     @Autowired
     public TransactionControllerImpl(
+            GSheetsService gSheets,
             TransactionRepo transactionRepo,
             AccountController accountController,
             AccountingUnitController accountingUnitController) {
+        this.gSheets = gSheets;
         this.transactionRepo = transactionRepo;
         this.accountController = accountController;
         this.accountingUnitController = accountingUnitController;
@@ -36,12 +45,14 @@ public class TransactionControllerImpl implements TransactionController {
             Transaction creditTransaction = splitAndGetCreditPart(transaction, creditAccount);
             transactionRepo.save(creditTransaction);
             changeAccountAmount(creditTransaction);
+            sendTransactionToGoogleSheets(creditTransaction);
         } else {
             setTransactionType(transaction);
         }
         transactionRepo.save(transaction);
         changeAccountAmount(transaction);
         changeAccountingUnitFactAmount(transaction);
+        sendTransactionToGoogleSheets(transaction);
     }
 
     @Override
@@ -90,5 +101,13 @@ public class TransactionControllerImpl implements TransactionController {
         creditTransaction.setAccount(creditAccount);
         creditTransaction.setType(TransactionType.CREDIT.getType());
         return creditTransaction;
+    }
+
+    private void sendTransactionToGoogleSheets(Transaction transaction) {
+        try {
+            gSheets.addTransaction(transaction);
+        } catch (IOException e) {
+            LOGGER.error("Problem save category to Google Sheets");
+        }
     }
 }
