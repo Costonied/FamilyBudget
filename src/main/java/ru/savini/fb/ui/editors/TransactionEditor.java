@@ -1,7 +1,10 @@
 package ru.savini.fb.ui.editors;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.io.IOException;
 import java.time.LocalDate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Key;
@@ -13,8 +16,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.controller.CategoryController;
@@ -36,19 +38,20 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private final AccountController accountController;
     private final CategoryController categoryController;
     private final TransactionController transactionController;
+    private List<Account> accounts = new ArrayList<>();
 
+    /* UI elements */
     TextField amount = new TextField("Amount");
     TextField comment = new TextField("Comment");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
-    ComboBox<Account> account = new ComboBox<>("Account");
-    ComboBox<Category> category = new ComboBox<>("Category");
+    ComboBox<Category> category;
+    ComboBox<Account> account;
+    ComboBox<Account> creditAccount;
 
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
     Button delete = new Button("Delete", VaadinIcon.TRASH.create());
     HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
-
-    Binder<Transaction> binder = new Binder<>(Transaction.class);
 
     private GSheetsService gSheets;
     private ChangeHandler changeHandler;
@@ -62,8 +65,10 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.accountController = accountController;
         this.categoryController = categoryController;
         this.transactionController = transactionController;
-        initBinder();
-        add(category, valueDatePicker, amount, account, comment, actions);
+        initAccountBehaviour();
+        initCreditAccountBehaviour();
+        initCategoryBehaviour();
+        add(category, valueDatePicker, amount, account, creditAccount, comment, actions);
         setSpacing(true);
         save.getElement().getThemeList().add("primary");
         delete.getElement().getThemeList().add("error");
@@ -74,26 +79,14 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
         valueDatePicker.setValue(LocalDate.now());
 
-        account.setItemLabelGenerator(Account::getName);
-        category.setItemLabelGenerator(Category::getName);
-
         setVisible(false);
     }
 
-    private void initBinder() {
-        binder.forField(amount)
-                .withConverter(new StringToDoubleConverter("Must enter a double"))
-                .bind(Transaction::getAmount, Transaction::setAmount);
-        binder.bind(valueDatePicker, Transaction::getDate, Transaction::setDate);
-        binder.bindInstanceFields(this);
-    }
-
     void save() {
-        transactionController.save(transaction);
+        bindUiElementsWithTransaction();
+        transactionController.save(transaction, creditAccount.getValue());
         changeHandler.onChange();
         try {
-            // TODO: Сейчас даже при edit добавляется новая транзакция в GSheets.
-            //  Нужно сделать edit для GSheets
             gSheets.addTransaction(transaction);
         } catch (IOException e) {
             LOGGER.error("Problem save category to Google Sheets");
@@ -117,12 +110,11 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         }
         this.refreshComboBoxData();
         this.transaction = transaction;
-        binder.setBean(this.transaction);
-        category.setValue(transaction.getCategory());
-        account.setValue(transaction.getAccount());
+        bindTransactionWithUiElements();
         amount.focus();
         cancel.setVisible(true);
         delete.setVisible(true);
+        creditAccount.setVisible(false);
         setVisible(true);
         LOGGER.debug("Selected transaction [{}]", transaction);
     }
@@ -130,9 +122,10 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     public final void addTransaction(Transaction transaction) {
         this.refreshComboBoxData();
         this.transaction = transaction;
-        binder.setBean(this.transaction);
+        bindTransactionWithUiElements();
         cancel.setVisible(true);
         delete.setVisible(false);
+        creditAccount.setVisible(false);
         setVisible(true);
     }
 
@@ -147,7 +140,64 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void refreshComboBoxData() {
-        account.setItems(accountController.getAll());
+        accounts = accountController.getAll();
+        account.setItems(accounts);
+        creditAccount.setItems(accounts);
         category.setItems(categoryController.getAll());
+    }
+
+    private void initAccountBehaviour() {
+        account = new ComboBox<>("Account");
+        account.setItemLabelGenerator(Account::getName);
+        account.setClearButtonVisible(true);
+        account.addFocusListener(event -> {
+            updateAccountsComboBoxData(account, creditAccount);
+        });
+    }
+
+    private void initCreditAccountBehaviour() {
+        creditAccount = new ComboBox<>("Credit account");
+        creditAccount.setItemLabelGenerator(Account::getName);
+        creditAccount.setClearButtonVisible(true);
+        creditAccount.addFocusListener(event -> {
+            updateAccountsComboBoxData(creditAccount, account);
+        });
+    }
+
+    private void initCategoryBehaviour() {
+        category = new ComboBox<>("Category");
+        category.setItemLabelGenerator(Category::getName);
+        category.addValueChangeListener(event -> {
+            if (event.getValue() != null &&
+                    CategoryCode.isGoalsCategory(event.getValue())) {
+                account.setLabel("Debit account");
+                creditAccount.setVisible(true);
+            }
+        });
+    }
+
+    private void updateAccountsComboBoxData(ComboBox<Account> selectedAccount, ComboBox<Account> anotherAccount) {
+        List<Account> correctedAccounts = new ArrayList<>(accounts);
+        correctedAccounts.remove(anotherAccount.getValue());
+        Account currentAcc = selectedAccount.getValue();
+        selectedAccount.setItems(correctedAccounts);
+        selectedAccount.setValue(currentAcc);
+    }
+
+    private void bindTransactionWithUiElements() {
+        category.setValue(transaction.getCategory());
+        account.setValue(transaction.getAccount());
+        creditAccount.setValue(null);
+        valueDatePicker.setValue(transaction.getDate());
+        amount.setValue(String.valueOf(transaction.getAmount()));
+        comment.setValue(transaction.getComment());
+    }
+
+    private void bindUiElementsWithTransaction() {
+        transaction.setCategory(category.getValue());
+        transaction.setAccount(account.getValue());
+        transaction.setDate(valueDatePicker.getValue());
+        transaction.setAmount(Double.parseDouble(amount.getValue()));
+        transaction.setComment(comment.getValue());
     }
 }

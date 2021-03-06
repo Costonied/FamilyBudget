@@ -12,31 +12,33 @@ import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
 public class TransactionControllerImpl implements TransactionController {
     private final TransactionRepo transactionRepo;
     private final AccountController accountController;
-    private final CategoryController categoryController;
     private final AccountingUnitController accountingUnitController;
 
     @Autowired
     public TransactionControllerImpl(
             TransactionRepo transactionRepo,
             AccountController accountController,
-            CategoryController categoryController,
             AccountingUnitController accountingUnitController) {
         this.transactionRepo = transactionRepo;
         this.accountController = accountController;
-        this.categoryController = categoryController;
         this.accountingUnitController = accountingUnitController;
     }
 
     @Override
-    public void save(Transaction transaction) {
-        setTransactionType(transaction);
+    public void save(Transaction transaction, Account creditAccount) {
+        if (CategoryCode.isGoalsCategory(transaction.getCategory())) {
+            Transaction creditTransaction = splitAndGetCreditPart(transaction, creditAccount);
+            transactionRepo.save(creditTransaction);
+            changeAccountAmount(creditTransaction);
+        } else {
+            setTransactionType(transaction);
+        }
         transactionRepo.save(transaction);
         changeAccountAmount(transaction);
         changeAccountingUnitFactAmount(transaction);
@@ -53,13 +55,12 @@ public class TransactionControllerImpl implements TransactionController {
     }
 
     private void changeAccountAmount(Transaction transaction) {
-        Category category = transaction.getCategory();
         double transAmount = transaction.getAmount();
         Account transAccount = transaction.getAccount();
 
-        if (categoryController.isIncome(category)) {
+        if (TransactionType.CREDIT.getType().equalsIgnoreCase(transaction.getType())) {
             accountController.putMoney(transAmount, transAccount);
-        } else if (categoryController.isOutgoing(category)) {
+        } else if (TransactionType.DEBIT.getType().equalsIgnoreCase(transaction.getType())) {
             accountController.withdrawMoney(transAmount, transAccount);
         }
     }
@@ -81,5 +82,13 @@ public class TransactionControllerImpl implements TransactionController {
         } else if (transCategoryType.equalsIgnoreCase(CategoryCode.INCOME.getCode())) {
             transaction.setType(TransactionType.CREDIT.getType());
         }
+    }
+
+    private Transaction splitAndGetCreditPart(Transaction transaction, Account creditAccount) {
+        transaction.setType(TransactionType.DEBIT.getType());
+        Transaction creditTransaction = new Transaction(transaction);
+        creditTransaction.setAccount(creditAccount);
+        creditTransaction.setType(TransactionType.CREDIT.getType());
+        return creditTransaction;
     }
 }
