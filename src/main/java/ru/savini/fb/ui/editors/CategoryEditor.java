@@ -1,6 +1,5 @@
 package ru.savini.fb.ui.editors;
 
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.data.binder.Binder;

@@ -41,7 +41,8 @@ public class TransactionControllerImpl implements TransactionController {
 
     @Override
     public void save(Transaction transaction, Account creditAccount) {
-        if (CategoryCode.isGoalsCategory(transaction.getCategory())) {
+        if (CategoryCode.isGoalsCategory(transaction.getCategory()) ||
+                CategoryCode.isTransferCategory(transaction.getCategory())) {
             Transaction creditTransaction = splitAndGetCreditPart(transaction, creditAccount);
             transactionRepo.save(creditTransaction);
             changeAccountAmount(creditTransaction);
@@ -77,6 +78,9 @@ public class TransactionControllerImpl implements TransactionController {
     }
 
     private void changeAccountingUnitFactAmount(Transaction transaction) {
+        if (CategoryCode.isTransferCategory(transaction.getCategory())) {
+            return;
+        }
         double transAmount = transaction.getAmount();
         LocalDate transDate = transaction.getDate();
         Category transCategory = transaction.getCategory();

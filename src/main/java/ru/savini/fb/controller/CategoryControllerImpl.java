@@ -53,18 +53,12 @@ public class CategoryControllerImpl implements CategoryController {
         List<CategoryCode> enumCodes = Arrays.asList(CategoryCode.values());
         return enumCodes.stream()
                 .map(CategoryCode::getCode)
+                .filter(categoryCode -> !categoryCode.equalsIgnoreCase(CategoryCode.TRANSFER.getCode()))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public boolean isIncome(Category category) {
-        String income = CategoryCode.INCOME.getCode();
-        return category.getType().equalsIgnoreCase(income);
-    }
-
-    @Override
-    public boolean isOutgoing(Category category) {
-        String outgo = CategoryCode.OUTGO.getCode();
-        return category.getType().equalsIgnoreCase(outgo);
+    public boolean isRepoEmpty() {
+        return this.getAll().isEmpty();
     }
 }

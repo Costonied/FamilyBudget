@@ -8,7 +8,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import ru.savini.fb.domain.entity.Account;
+import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.repo.AccountRepo;
+import ru.savini.fb.controller.CategoryController;
 
 @SpringBootApplication
 public class FamilyBudgetApplication {
@@ -19,7 +22,8 @@ public class FamilyBudgetApplication {
     }
 
     @Bean
-    public CommandLineRunner loadData(AccountRepo repository) {
+    public CommandLineRunner loadData(AccountRepo repository,
+                                      CategoryController categoryController) {
         return (args) -> {
             // save a couple of customers
 //            repository.save(new Account("Наличные", 10.0));
@@ -48,6 +52,15 @@ public class FamilyBudgetApplication {
 //                LOGGER.info(card.toString());
 //            }
 //            LOGGER.info("");
+
+            if (categoryController.isRepoEmpty()) {
+                createTransferCategory(categoryController);
+            }
         };
+    }
+
+    private void createTransferCategory(CategoryController categoryController) {
+        Category category = new Category("Перевод между счетами", CategoryCode.TRANSFER.getCode());
+        categoryController.save(category);
     }
 }
