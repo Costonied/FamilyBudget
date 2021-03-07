@@ -158,8 +158,9 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         category = new ComboBox<>("Category");
         category.setItemLabelGenerator(Category::getName);
         category.addValueChangeListener(event -> {
-            if (event.getValue() != null &&
-                    CategoryCode.isGoalsCategory(event.getValue())) {
+            if (event.getValue() != null && (
+                    CategoryCode.isGoalsCategory(event.getValue()) ||
+                    CategoryCode.isTransferCategory(event.getValue()))) {
                 account.setLabel("Debit account");
                 creditAccount.setVisible(true);
             }

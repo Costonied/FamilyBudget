@@ -14,6 +14,5 @@ public interface CategoryController {
 
     List<String> getCategoryCodes();
 
-    boolean isIncome(Category category);
-    boolean isOutgoing(Category category);
+    boolean isRepoEmpty();
 }
