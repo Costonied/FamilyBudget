@@ -42,14 +42,17 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     TextField amount = new TextField("Amount");
     TextField comment = new TextField("Comment");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
-    ComboBox<Category> category;
+
     ComboBox<Account> account;
+    ComboBox<Category> category;
     ComboBox<Account> creditAccount;
 
-    Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
+    Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button delete = new Button("Delete", VaadinIcon.TRASH.create());
-    HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
+    Button saveAndNew = new Button("Save & New", VaadinIcon.CHECK_SQUARE_O.create());
+
+    HorizontalLayout actions = new HorizontalLayout(save, cancel, saveAndNew, delete);
 
     private ChangeHandler changeHandler;
 
@@ -60,32 +63,30 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.accountController = accountController;
         this.categoryController = categoryController;
         this.transactionController = transactionController;
+
         initAccountBehaviour();
-        initCreditAccountBehaviour();
+        initButtonsBehaviour();
         initCategoryBehaviour();
-        add(category, valueDatePicker, amount, account, creditAccount, comment, actions);
+        initCreditAccountBehaviour();
+
         setSpacing(true);
-        save.getElement().getThemeList().add("primary");
-        delete.getElement().getThemeList().add("error");
-        save.addClickListener(e -> save());
-        delete.addClickListener(e -> delete());
-        cancel.addClickListener(e -> cancel());
-        addKeyPressListener(Key.ENTER, e -> save());
+        add(category, valueDatePicker, amount, account, creditAccount, comment, actions);
+        addKeyPressListener(Key.ENTER, e -> save(false));
 
         valueDatePicker.setValue(LocalDate.now());
 
         setVisible(false);
     }
 
-    void save() {
+    void save(boolean isNeededNewTransaction) {
         bindUiElementsWithTransaction();
         transactionController.save(transaction, creditAccount.getValue());
-        changeHandler.onChange();
+        changeHandler.onChange(isNeededNewTransaction);
     }
 
     void delete() {
         transactionController.delete(transaction);
-        changeHandler.onChange();
+        changeHandler.onChange(false);
     }
 
     void cancel() {
@@ -120,7 +121,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     public interface ChangeHandler {
-        void onChange();
+        void onChange(boolean isNeededNewTransaction);
     }
 
     public void setChangeHandler(ChangeHandler h) {
@@ -165,6 +166,16 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
                 creditAccount.setVisible(true);
             }
         });
+    }
+
+    private void initButtonsBehaviour() {
+        save.getElement().getThemeList().add("primary");
+        delete.getElement().getThemeList().add("error");
+        saveAndNew.getElement().getThemeList().add("primary");
+        cancel.addClickListener(e -> cancel());
+        delete.addClickListener(e -> delete());
+        save.addClickListener(e -> save(false));
+        saveAndNew.addClickListener(e -> save(true));
     }
 
     private void updateAccountsComboBoxData(ComboBox<Account> selectedAccount, ComboBox<Account> anotherAccount) {

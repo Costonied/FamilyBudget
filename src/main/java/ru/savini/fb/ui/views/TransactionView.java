@@ -45,8 +45,12 @@ public class TransactionView extends VerticalLayout {
         addNewBtn.addClickListener(e -> editor.addTransaction(new Transaction()));
 
         // Listen changes made by the editor, refresh data from backend
-        editor.setChangeHandler(() -> {
-            editor.setVisible(false);
+        editor.setChangeHandler(isNeededNewTransaction -> {
+            if (isNeededNewTransaction) {
+                editor.addTransaction(new Transaction());
+            } else {
+                editor.setVisible(false);
+            }
             setListOfTransactions();
         });
 
