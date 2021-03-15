@@ -41,8 +41,7 @@ public class TransactionControllerImpl implements TransactionController {
 
     @Override
     public void save(Transaction transaction, Account creditAccount) {
-        if (CategoryCode.isGoalsCategory(transaction.getCategory()) ||
-                CategoryCode.isTransferCategory(transaction.getCategory())) {
+        if (isSplittedTransaction(transaction)) {
             Transaction creditTransaction = splitAndGetCreditPart(transaction, creditAccount);
             transactionRepo.save(creditTransaction);
             changeAccountAmount(creditTransaction);
@@ -113,5 +112,10 @@ public class TransactionControllerImpl implements TransactionController {
         } catch (IOException e) {
             LOGGER.error("Problem save category to Google Sheets");
         }
+    }
+
+    private boolean isSplittedTransaction(Transaction transaction) {
+        return CategoryCode.isGoalsCategory(transaction.getCategory()) ||
+                CategoryCode.isTransferCategory(transaction.getCategory());
     }
 }
