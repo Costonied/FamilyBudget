@@ -6,10 +6,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.domain.entity.AccountingUnit;
+import ru.savini.fb.domain.entity.TransactionPair;
 import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.enums.TransactionType;
 import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.TransactionRepo;
+import ru.savini.fb.repo.TransactionPairRepo;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
@@ -24,6 +26,7 @@ public class TransactionControllerImpl implements TransactionController {
 
     private final GSheetsService gSheets;
     private final TransactionRepo transactionRepo;
+    private final TransactionPairRepo transactionPairRepo;
     private final AccountController accountController;
     private final AccountingUnitController accountingUnitController;
 
@@ -31,10 +34,12 @@ public class TransactionControllerImpl implements TransactionController {
     public TransactionControllerImpl(
             GSheetsService gSheets,
             TransactionRepo transactionRepo,
+            TransactionPairRepo transactionPairRepo,
             AccountController accountController,
             AccountingUnitController accountingUnitController) {
         this.gSheets = gSheets;
         this.transactionRepo = transactionRepo;
+        this.transactionPairRepo = transactionPairRepo;
         this.accountController = accountController;
         this.accountingUnitController = accountingUnitController;
     }
@@ -42,17 +47,21 @@ public class TransactionControllerImpl implements TransactionController {
     @Override
     public void save(Transaction transaction, Account creditAccount) {
         if (isSplittedTransaction(transaction)) {
-            Transaction creditTransaction = splitAndGetCreditPart(transaction, creditAccount);
-            transactionRepo.save(creditTransaction);
-            changeAccountAmount(creditTransaction);
-            sendTransactionToGoogleSheets(creditTransaction);
+            processAndSaveSplittedTransactions(transaction, creditAccount);
+            return;
+        }
+        // check does it transaction edit
+        if (transaction.getId() != null) {
+            Transaction originalTransaction = transactionRepo.getOne(transaction.getId());
+            changeAccountAmount(originalTransaction, transaction);
+            changeAccountingUnitFactAmount(originalTransaction, transaction);
         } else {
             setTransactionType(transaction);
+            changeAccountAmount(transaction);
+            changeAccountingUnitFactAmount(transaction);
+            sendTransactionToGoogleSheets(transaction);
         }
         transactionRepo.save(transaction);
-        changeAccountAmount(transaction);
-        changeAccountingUnitFactAmount(transaction);
-        sendTransactionToGoogleSheets(transaction);
     }
 
     @Override
@@ -68,11 +77,29 @@ public class TransactionControllerImpl implements TransactionController {
     private void changeAccountAmount(Transaction transaction) {
         double transAmount = transaction.getAmount();
         Account transAccount = transaction.getAccount();
-
-        if (TransactionType.CREDIT.getType().equalsIgnoreCase(transaction.getType())) {
+        if (isCreditTransaction(transaction)) {
             accountController.putMoney(transAmount, transAccount);
-        } else if (TransactionType.DEBIT.getType().equalsIgnoreCase(transaction.getType())) {
+        } else {
             accountController.withdrawMoney(transAmount, transAccount);
+        }
+    }
+
+    private void changeAccountAmount(Transaction originalTrans, Transaction editedTrans) {
+        if (isAccountSame(originalTrans, editedTrans)) {
+            double diffAmount = editedTrans.getAmount() - originalTrans.getAmount();
+            if (isCreditTransaction(originalTrans)) {
+                accountController.putMoney(diffAmount, originalTrans.getAccount());
+            } else {
+                accountController.withdrawMoney(diffAmount, originalTrans.getAccount());
+            }
+        } else {
+            if (isCreditTransaction(originalTrans)) {
+                accountController.withdrawMoney(originalTrans.getAmount(), originalTrans.getAccount());
+                accountController.putMoney(editedTrans.getAmount(), editedTrans.getAccount());
+            } else {
+                accountController.putMoney(originalTrans.getAmount(), originalTrans.getAccount());
+                accountController.withdrawMoney(editedTrans.getAmount(), editedTrans.getAccount());
+            }
         }
     }
 
@@ -87,6 +114,24 @@ public class TransactionControllerImpl implements TransactionController {
         AccountingUnit accountingUnit = accountingUnitController
                 .getByCategoryAndLocalDate(transCategory, transDate);
         accountingUnitController.increaseFactAmount(accountingUnit, transAmount);
+    }
+
+    private void changeAccountingUnitFactAmount(Transaction originalTrans, Transaction editedTrans) {
+        if (CategoryCode.isTransferCategory(originalTrans.getCategory())) {
+            return;
+        }
+        double originalTransAmount = originalTrans.getAmount();
+        double editedTransAmount = editedTrans.getAmount();
+        LocalDate originalTransDate = originalTrans.getDate();
+        LocalDate editedTransDate = originalTrans.getDate();
+        Category transCategory = originalTrans.getCategory();
+
+        AccountingUnit originalAccountingUnit = accountingUnitController
+                .getByCategoryAndLocalDate(transCategory, originalTransDate);
+        AccountingUnit editedAccountingUnit = accountingUnitController
+                .getByCategoryAndLocalDate(transCategory, editedTransDate);
+        accountingUnitController.decreaseFactAmount(originalAccountingUnit, originalTransAmount);
+        accountingUnitController.decreaseFactAmount(editedAccountingUnit, editedTransAmount);
     }
 
     private void setTransactionType(Transaction transaction) {
@@ -117,5 +162,26 @@ public class TransactionControllerImpl implements TransactionController {
     private boolean isSplittedTransaction(Transaction transaction) {
         return CategoryCode.isGoalsCategory(transaction.getCategory()) ||
                 CategoryCode.isTransferCategory(transaction.getCategory());
+    }
+
+    private boolean isCreditTransaction(Transaction transaction) {
+        return TransactionType.CREDIT.getType().equalsIgnoreCase(transaction.getType());
+    }
+
+    private boolean isAccountSame(Transaction firstTrans, Transaction secondTrans) {
+        return firstTrans.getAccount().getId().equals(secondTrans.getAccount().getId());
+    }
+
+    private void processAndSaveSplittedTransactions(Transaction debitTransaction, Account creditAccount) {
+        Transaction creditTransaction = splitAndGetCreditPart(debitTransaction, creditAccount);
+        TransactionPair transactionPair = new TransactionPair(debitTransaction, creditTransaction);
+        transactionRepo.save(debitTransaction);
+        transactionRepo.save(creditTransaction);
+        transactionPairRepo.save(transactionPair);
+        changeAccountAmount(debitTransaction);
+        changeAccountAmount(creditTransaction);
+        changeAccountingUnitFactAmount(debitTransaction);
+        sendTransactionToGoogleSheets(creditTransaction);
+        // TODO: добавить обработку если это транзакция редактирования, а не добавления новой
     }
 }

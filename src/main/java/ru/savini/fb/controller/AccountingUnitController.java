@@ -15,4 +15,5 @@ public interface AccountingUnitController {
     AccountingUnit getByCategoryAndLocalDate(Category category, LocalDate localDate);
 
     void increaseFactAmount(AccountingUnit accountingUnit, double amount);
+    void decreaseFactAmount(AccountingUnit accountingUnit, double amount);
 }

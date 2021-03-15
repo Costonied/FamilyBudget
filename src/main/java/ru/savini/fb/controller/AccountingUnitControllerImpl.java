@@ -62,6 +62,14 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
         save(accountingUnit);
     }
 
+    @Override
+    public void decreaseFactAmount(AccountingUnit accountingUnit, double amount) {
+        double currentFactAmount = accountingUnit.getFactAmount();
+        double newFactAmount = currentFactAmount - amount;
+        accountingUnit.setFactAmount(newFactAmount);
+        save(accountingUnit);
+    }
+
     private AccountingUnit getNewEmptyAccountingUnit(Category category, int year, int month) {
         AccountingUnit newAccountingUnit = new AccountingUnit();
         newAccountingUnit.setYear(year);

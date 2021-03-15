@@ -17,4 +17,13 @@ public class TransactionPair {
     private Long id;
     @OneToOne private Transaction debitTransaction;
     @OneToOne private Transaction creditTransaction;
+
+    public TransactionPair() {
+        // nothing
+    }
+
+    public TransactionPair(Transaction debitTransaction, Transaction creditTransaction) {
+        this.debitTransaction = debitTransaction;
+        this.creditTransaction = creditTransaction;
+    }
 }
