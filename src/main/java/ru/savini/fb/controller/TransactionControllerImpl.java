@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.TransactionPair;
@@ -44,6 +45,7 @@ public class TransactionControllerImpl implements TransactionController {
         this.accountingUnitController = accountingUnitController;
     }
 
+    @Transactional
     @Override
     public void save(Transaction transaction, Account creditAccount) {
         if (isSplittedTransaction(transaction)) {
