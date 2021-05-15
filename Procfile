@@ -1,0 +1,1 @@
+web: java -jar target/family-budget-1.0.jar
