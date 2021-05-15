@@ -5,6 +5,7 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.exceptions.WritingValueRangeException;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +54,10 @@ public class GSheetsServiceImpl implements GSheetsService {
     @Autowired
     public GSheetsServiceImpl() throws GeneralSecurityException, IOException {
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        this.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+//        this.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+//                .setApplicationName(APPLICATION_NAME)
+//                .build();
+        this.service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getGoogleServiceAccountCredential())
                 .setApplicationName(APPLICATION_NAME)
                 .build();
     }
@@ -114,5 +119,17 @@ public class GSheetsServiceImpl implements GSheetsService {
                 .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("costonied");
+    }
+
+    // TODO: make it clean
+    private static Credential getGoogleServiceAccountCredential() throws IOException {
+        InputStream in = GSheetsServiceImpl.class.getResourceAsStream("/google-service-account-creds.json");
+        if (in == null) {
+            throw new FileNotFoundException("Resource not found: /google-service-account-creds.json");
+        }
+        GoogleCredential credential = GoogleCredential.fromStream(in)
+                .createScoped(Collections.singleton(SheetsScopes.SPREADSHEETS));
+        in.close();
+        return credential;
     }
 }
