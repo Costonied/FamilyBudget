@@ -11,5 +11,4 @@
 /webpack.config.js
 /webpack.generated.js
 /family-budget.iml
-/src/main/resources/google-service-account-creds.json
-/src/main/resources/credentials.json
+/src/main/resources/*credentials.json
