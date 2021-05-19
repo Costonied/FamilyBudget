@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
+import com.vaadin.flow.component.textfield.BigDecimalField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Key;
@@ -39,7 +40,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private List<Account> accounts = new ArrayList<>();
 
     /* UI elements */
-    TextField amount = new TextField("Amount");
+    BigDecimalField amount = new BigDecimalField("Amount");
     TextField comment = new TextField("Comment");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
 
@@ -191,7 +192,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         account.setValue(transaction.getAccount());
         creditAccount.setValue(null);
         valueDatePicker.setValue(transaction.getDate());
-        amount.setValue(String.valueOf(transaction.getAmount()));
+        amount.setValue(transaction.getAmount());
         comment.setValue(transaction.getComment());
     }
 
@@ -199,7 +200,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         transaction.setCategory(category.getValue());
         transaction.setAccount(account.getValue());
         transaction.setDate(valueDatePicker.getValue());
-        transaction.setAmount(Double.parseDouble(amount.getValue()));
+        transaction.setAmount(amount.getValue());
         transaction.setComment(comment.getValue());
     }
 }

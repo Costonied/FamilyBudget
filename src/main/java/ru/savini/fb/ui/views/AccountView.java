@@ -16,6 +16,8 @@ import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.ui.editors.AccountEditor;
 import ru.savini.fb.controller.AccountController;
 
+import java.math.BigDecimal;
+
 @Route(value = "accounts", layout = MainView.class)
 @PageTitle("Accounts")
 @RouteAlias(value = "", layout = MainView.class)
@@ -56,7 +58,7 @@ public class AccountView extends VerticalLayout {
         });
 
         // Instantiate and edit new Account the new button is clicked
-        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", 0.00, "RUB")));
+        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, BigDecimal.ROUND_DOWN), "RUB")));
 
         // Listen changes made by the editor, refresh data from backend
         editor.setChangeHandler(() -> {

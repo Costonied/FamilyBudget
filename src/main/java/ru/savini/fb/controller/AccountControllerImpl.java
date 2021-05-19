@@ -1,8 +1,10 @@
 package ru.savini.fb.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.joda.money.Money;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,18 +32,23 @@ public class AccountControllerImpl implements AccountController {
     }
 
     @Override
-    public void putMoney(double moneyAmount, Account account) {
-        double currentAmount = account.getAmount();
-        double newAmount = currentAmount + moneyAmount;
-        account.setAmount(newAmount);
+    public void putMoney(BigDecimal transactionAmount, Account account) {
+        Money currentAccountMoney = account.getMoney();
+        Money transactionMoney = Money.of(currentAccountMoney.getCurrencyUnit(), transactionAmount);
+        Money newAccountMoney = currentAccountMoney.plus(transactionMoney);
+        account.setMoney(newAccountMoney);
+        account.setAmount(newAccountMoney.getAmount());
         this.save(account);
     }
 
+    // TODO: refactoring needed - delete duplicate of code
     @Override
-    public void withdrawMoney(double moneyAmount, Account account) {
-        double currentAmount = account.getAmount();
-        double newAmount = currentAmount - moneyAmount;
-        account.setAmount(newAmount);
+    public void withdrawMoney(BigDecimal transactionAmount, Account account) {
+        Money currentAccountMoney = account.getMoney();
+        Money transactionMoney = Money.of(currentAccountMoney.getCurrencyUnit(), transactionAmount);
+        Money newAccountMoney = currentAccountMoney.minus(transactionMoney);
+        account.setMoney(newAccountMoney);
+        account.setAmount(newAccountMoney.getAmount());
         this.save(account);
     }
 
