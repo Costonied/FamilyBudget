@@ -1,6 +1,5 @@
 package ru.savini.fb.ui.editors;
 
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -11,10 +10,10 @@ import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.controller.AccountingUnitController;
@@ -33,8 +32,8 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
 
     IntegerField year = new IntegerField("Year");
     IntegerField month = new IntegerField("Month");
-    NumberField planAmount = new NumberField("Plan amount");
-    NumberField factAmount = new NumberField("Fact amount");
+    BigDecimalField planAmount = new BigDecimalField("Plan amount");
+    BigDecimalField factAmount = new BigDecimalField("Fact amount");
     ComboBox<Category> category = new ComboBox<>("Category");
 
     Button save = new Button("Save", VaadinIcon.CHECK.create());

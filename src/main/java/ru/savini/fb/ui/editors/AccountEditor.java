@@ -6,10 +6,10 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
 
     /* Fields to edit properties in Account entity */
     TextField name = new TextField("Account name");
-    TextField amount = new TextField("Amount");
+    BigDecimalField amount = new BigDecimalField("Amount");
     ComboBox<String> currency;
 
     /* Action buttons */
@@ -77,7 +77,6 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     private void initBinder() {
         initCurrencyCodes();
         binder.forField(amount)
-                .withConverter(new StringToDoubleConverter("Must enter a double"))
                 .bind(Account::getAmount, Account::setAmount);
         binder.forField(currency).bind(Account::getName, (c, a) -> c.setCurrency(currency.getValue()));
 

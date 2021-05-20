@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.ManyToOne;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -20,14 +21,14 @@ public class AccountingUnit {
     private Long id;
     private int year;
     private int month;
-    private double planAmount;
-    private double factAmount;
+    private BigDecimal planAmount;
+    private BigDecimal factAmount;
     @ManyToOne private Category category;
 
     public AccountingUnit() {
         this.year = LocalDate.now().getYear();
         this.month = LocalDate.now().getMonthValue();
-        this.planAmount = 0.0;
-        this.factAmount = 0.0;
+        this.planAmount = BigDecimal.ZERO;
+        this.factAmount = BigDecimal.ZERO;
     }
 }

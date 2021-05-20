@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.ManyToOne;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -18,14 +19,14 @@ public class Transaction {
     @GeneratedValue(generator="TRANSACTION_GENERATOR")
     private Long id;
     private LocalDate date;
-    private double amount;
+    private BigDecimal amount;
     private String type;
     private String comment;
     @ManyToOne private Category category;
     @ManyToOne private Account account;
 
     public Transaction() {
-        this.amount = 0.0;
+        this.amount = BigDecimal.ZERO;
         this.comment = "";
         this.date = LocalDate.now();
     }

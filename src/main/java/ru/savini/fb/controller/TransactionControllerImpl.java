@@ -18,6 +18,7 @@ import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -80,9 +81,9 @@ public class TransactionControllerImpl implements TransactionController {
         double transAmount = transaction.getAmount();
         Account transAccount = transaction.getAccount();
         if (isCreditTransaction(transaction)) {
-            accountController.putMoney(transAmount, transAccount);
+            accountController.putMoney(BigDecimal.valueOf(transAmount), transAccount);
         } else {
-            accountController.withdrawMoney(transAmount, transAccount);
+            accountController.withdrawMoney(BigDecimal.valueOf(transAmount), transAccount);
         }
     }
 
@@ -90,17 +91,17 @@ public class TransactionControllerImpl implements TransactionController {
         if (isAccountSame(originalTrans, editedTrans)) {
             double diffAmount = editedTrans.getAmount() - originalTrans.getAmount();
             if (isCreditTransaction(originalTrans)) {
-                accountController.putMoney(diffAmount, originalTrans.getAccount());
+                accountController.putMoney(BigDecimal.valueOf(diffAmount), originalTrans.getAccount());
             } else {
-                accountController.withdrawMoney(diffAmount, originalTrans.getAccount());
+                accountController.withdrawMoney(BigDecimal.valueOf(diffAmount), originalTrans.getAccount());
             }
         } else {
             if (isCreditTransaction(originalTrans)) {
-                accountController.withdrawMoney(originalTrans.getAmount(), originalTrans.getAccount());
-                accountController.putMoney(editedTrans.getAmount(), editedTrans.getAccount());
+                accountController.withdrawMoney(BigDecimal.valueOf(originalTrans.getAmount()), originalTrans.getAccount());
+                accountController.putMoney(BigDecimal.valueOf(editedTrans.getAmount()), editedTrans.getAccount());
             } else {
-                accountController.putMoney(originalTrans.getAmount(), originalTrans.getAccount());
-                accountController.withdrawMoney(editedTrans.getAmount(), editedTrans.getAccount());
+                accountController.putMoney(BigDecimal.valueOf(originalTrans.getAmount()), originalTrans.getAccount());
+                accountController.withdrawMoney(BigDecimal.valueOf(editedTrans.getAmount()), editedTrans.getAccount());
             }
         }
     }
