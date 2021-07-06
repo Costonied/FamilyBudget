@@ -1,5 +1,7 @@
 package ru.savini.fb.controller;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -78,53 +80,59 @@ public class TransactionControllerImpl implements TransactionController {
     }
 
     private void changeAccountAmount(Transaction transaction) {
-        double transAmount = transaction.getAmount();
+        BigDecimal transAmount = transaction.getAmount();
         Account transAccount = transaction.getAccount();
         if (isCreditTransaction(transaction)) {
-            accountController.putMoney(BigDecimal.valueOf(transAmount), transAccount);
+            accountController.putMoney(transAmount, transAccount);
         } else {
-            accountController.withdrawMoney(BigDecimal.valueOf(transAmount), transAccount);
+            accountController.withdrawMoney(transAmount, transAccount);
         }
     }
 
     private void changeAccountAmount(Transaction originalTrans, Transaction editedTrans) {
         if (isAccountSame(originalTrans, editedTrans)) {
-            double diffAmount = editedTrans.getAmount() - originalTrans.getAmount();
+            Money editedTransMoney = Money.of(getCurrencyUnitFromTransaction(editedTrans), editedTrans.getAmount());
+            Money originalTransMoney = Money.of(getCurrencyUnitFromTransaction(originalTrans), originalTrans.getAmount());
+            Money diffAmount = editedTransMoney.minus(originalTransMoney);
             if (isCreditTransaction(originalTrans)) {
-                accountController.putMoney(BigDecimal.valueOf(diffAmount), originalTrans.getAccount());
+                accountController.putMoney(diffAmount.getAmount(), originalTrans.getAccount());
             } else {
-                accountController.withdrawMoney(BigDecimal.valueOf(diffAmount), originalTrans.getAccount());
+                accountController.withdrawMoney(diffAmount.getAmount(), originalTrans.getAccount());
             }
         } else {
             if (isCreditTransaction(originalTrans)) {
-                accountController.withdrawMoney(BigDecimal.valueOf(originalTrans.getAmount()), originalTrans.getAccount());
-                accountController.putMoney(BigDecimal.valueOf(editedTrans.getAmount()), editedTrans.getAccount());
+                accountController.withdrawMoney(originalTrans.getAmount(), originalTrans.getAccount());
+                accountController.putMoney(editedTrans.getAmount(), editedTrans.getAccount());
             } else {
-                accountController.putMoney(BigDecimal.valueOf(originalTrans.getAmount()), originalTrans.getAccount());
-                accountController.withdrawMoney(BigDecimal.valueOf(editedTrans.getAmount()), editedTrans.getAccount());
+                accountController.putMoney(originalTrans.getAmount(), originalTrans.getAccount());
+                accountController.withdrawMoney(editedTrans.getAmount(), editedTrans.getAccount());
             }
         }
+    }
+
+    private CurrencyUnit getCurrencyUnitFromTransaction(Transaction transaction) {
+        return CurrencyUnit.of(transaction.getAccount().getCurrency());
     }
 
     private void changeAccountingUnitFactAmount(Transaction transaction) {
         if (CategoryCode.isTransferCategory(transaction.getCategory())) {
             return;
         }
-        double transAmount = transaction.getAmount();
+        Money transMoney = Money.of(getCurrencyUnitFromTransaction(transaction), transaction.getAmount());
         LocalDate transDate = transaction.getDate();
         Category transCategory = transaction.getCategory();
 
         AccountingUnit accountingUnit = accountingUnitController
                 .getByCategoryAndLocalDate(transCategory, transDate);
-        accountingUnitController.increaseFactAmount(accountingUnit, transAmount);
+        accountingUnitController.increaseFactAmount(accountingUnit, transMoney);
     }
 
     private void changeAccountingUnitFactAmount(Transaction originalTrans, Transaction editedTrans) {
         if (CategoryCode.isTransferCategory(originalTrans.getCategory())) {
             return;
         }
-        double originalTransAmount = originalTrans.getAmount();
-        double editedTransAmount = editedTrans.getAmount();
+        Money originalTransMoney = Money.of(getCurrencyUnitFromTransaction(originalTrans), originalTrans.getAmount());
+        Money editedTransMoney = Money.of(getCurrencyUnitFromTransaction(editedTrans), editedTrans.getAmount());
         LocalDate originalTransDate = originalTrans.getDate();
         LocalDate editedTransDate = originalTrans.getDate();
         Category transCategory = originalTrans.getCategory();
@@ -133,8 +141,8 @@ public class TransactionControllerImpl implements TransactionController {
                 .getByCategoryAndLocalDate(transCategory, originalTransDate);
         AccountingUnit editedAccountingUnit = accountingUnitController
                 .getByCategoryAndLocalDate(transCategory, editedTransDate);
-        accountingUnitController.decreaseFactAmount(originalAccountingUnit, originalTransAmount);
-        accountingUnitController.decreaseFactAmount(editedAccountingUnit, editedTransAmount);
+        accountingUnitController.decreaseFactAmount(originalAccountingUnit, originalTransMoney);
+        accountingUnitController.decreaseFactAmount(editedAccountingUnit, editedTransMoney);
     }
 
     private void setTransactionType(Transaction transaction) {
