@@ -40,6 +40,13 @@ public class Account {
         setMoney(currency, amount);
     }
 
+    public Money getMoney() {
+        if (this.money == null) {
+            this.setMoney(this.currency, this.amount);
+        }
+        return this.money;
+    }
+
     public void setMoney(String currency, BigDecimal amount) {
         this.money = Money.of(CurrencyUnit.of(currency), amount);
     }
