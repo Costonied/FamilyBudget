@@ -64,6 +64,6 @@ public class TransactionView extends VerticalLayout {
 
     private void setGridColumns() {
         grid.addColumns("date", "category.name",
-                "amount", "account.name", "comment");
+                "amount", "account.name", "type", "comment");
     }
 }
