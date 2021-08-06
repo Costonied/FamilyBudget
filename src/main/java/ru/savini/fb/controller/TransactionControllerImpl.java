@@ -12,14 +12,12 @@ import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.TransactionPair;
 import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.enums.TransactionType;
-import ru.savini.fb.gsheets.GSheetsService;
 import ru.savini.fb.repo.TransactionRepo;
 import ru.savini.fb.repo.TransactionPairRepo;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +26,6 @@ import java.util.List;
 public class TransactionControllerImpl implements TransactionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionControllerImpl.class);
 
-    private final GSheetsService gSheets;
     private final TransactionRepo transactionRepo;
     private final TransactionPairRepo transactionPairRepo;
     private final AccountController accountController;
@@ -36,12 +33,10 @@ public class TransactionControllerImpl implements TransactionController {
 
     @Autowired
     public TransactionControllerImpl(
-            GSheetsService gSheets,
             TransactionRepo transactionRepo,
             TransactionPairRepo transactionPairRepo,
             AccountController accountController,
             AccountingUnitController accountingUnitController) {
-        this.gSheets = gSheets;
         this.transactionRepo = transactionRepo;
         this.transactionPairRepo = transactionPairRepo;
         this.accountController = accountController;
@@ -64,7 +59,6 @@ public class TransactionControllerImpl implements TransactionController {
             setTransactionType(transaction);
             changeAccountAmount(transaction);
             changeAccountingUnitFactAmount(transaction);
-            sendTransactionToGoogleSheets(transaction);
         }
         transactionRepo.save(transaction);
     }
@@ -162,14 +156,6 @@ public class TransactionControllerImpl implements TransactionController {
         return creditTransaction;
     }
 
-    private void sendTransactionToGoogleSheets(Transaction transaction) {
-        try {
-            gSheets.addTransaction(transaction);
-        } catch (IOException e) {
-            LOGGER.error("Problem save category to Google Sheets");
-        }
-    }
-
     private boolean isSplittedTransaction(Transaction transaction) {
         return CategoryCode.isGoalsCategory(transaction.getCategory()) ||
                 CategoryCode.isTransferCategory(transaction.getCategory());
@@ -192,7 +178,5 @@ public class TransactionControllerImpl implements TransactionController {
         changeAccountAmount(debitTransaction);
         changeAccountAmount(creditTransaction);
         changeAccountingUnitFactAmount(debitTransaction);
-        sendTransactionToGoogleSheets(creditTransaction);
-        // TODO: добавить обработку если это транзакция редактирования, а не добавления новой
     }
 }
