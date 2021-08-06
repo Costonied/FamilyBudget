@@ -57,6 +57,7 @@ public class TransactionControllerImpl implements TransactionController {
             changeAccountingUnitFactAmount(originalTransaction, transaction);
         } else {
             setTransactionType(transaction);
+            setCorrectAccount(transaction, creditAccount);
             changeAccountAmount(transaction);
             changeAccountingUnitFactAmount(transaction);
         }
@@ -145,6 +146,12 @@ public class TransactionControllerImpl implements TransactionController {
             transaction.setType(TransactionType.DEBIT.getType());
         } else if (transCategoryType.equalsIgnoreCase(CategoryCode.INCOME.getCode())) {
             transaction.setType(TransactionType.CREDIT.getType());
+        }
+    }
+
+    private void setCorrectAccount(Transaction transaction, Account creditAccount) {
+        if (CategoryCode.isIncomeCategory(transaction.getCategory())) {
+            transaction.setAccount(creditAccount);
         }
     }
 

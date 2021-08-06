@@ -27,6 +27,7 @@ import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.controller.TransactionController;
+import ru.savini.fb.exceptions.InvalidCategoryCodeException;
 
 @UIScope
 @SpringComponent
@@ -44,8 +45,8 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     TextField comment = new TextField("Comment");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
 
-    ComboBox<Account> account;
     ComboBox<Category> category;
+    ComboBox<Account> debitAccount;
     ComboBox<Account> creditAccount;
 
     Button cancel = new Button("Cancel");
@@ -65,13 +66,13 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.categoryController = categoryController;
         this.transactionController = transactionController;
 
-        initAccountBehaviour();
+        initDebitAccountBehaviour();
         initButtonsBehaviour();
         initCategoryBehaviour();
         initCreditAccountBehaviour();
 
         setSpacing(true);
-        add(category, valueDatePicker, amount, account, creditAccount, comment, actions);
+        add(category, valueDatePicker, amount, debitAccount, creditAccount, comment, actions);
         addKeyPressListener(Key.ENTER, e -> save(false));
 
         valueDatePicker.setValue(LocalDate.now());
@@ -117,6 +118,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         bindTransactionWithUiElements();
         cancel.setVisible(true);
         delete.setVisible(false);
+        debitAccount.setVisible(false);
         creditAccount.setVisible(false);
         setVisible(true);
     }
@@ -133,17 +135,17 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
     private void refreshComboBoxData() {
         accounts = accountController.getAll();
-        account.setItems(accounts);
+        debitAccount.setItems(accounts);
         creditAccount.setItems(accounts);
         category.setItems(categoryController.getAll());
     }
 
-    private void initAccountBehaviour() {
-        account = new ComboBox<>("Account");
-        account.setItemLabelGenerator(Account::getName);
-        account.setClearButtonVisible(true);
-        account.addFocusListener(event -> {
-            updateAccountsComboBoxData(account, creditAccount);
+    private void initDebitAccountBehaviour() {
+        debitAccount = new ComboBox<>("Debit account");
+        debitAccount.setItemLabelGenerator(Account::getName);
+        debitAccount.setClearButtonVisible(true);
+        debitAccount.addFocusListener(event -> {
+            updateAccountsComboBoxData(debitAccount, creditAccount);
         });
     }
 
@@ -152,7 +154,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         creditAccount.setItemLabelGenerator(Account::getName);
         creditAccount.setClearButtonVisible(true);
         creditAccount.addFocusListener(event -> {
-            updateAccountsComboBoxData(creditAccount, account);
+            updateAccountsComboBoxData(creditAccount, debitAccount);
         });
     }
 
@@ -160,11 +162,20 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         category = new ComboBox<>("Category");
         category.setItemLabelGenerator(Category::getName);
         category.addValueChangeListener(event -> {
-            if (event.getValue() != null && (
-                    CategoryCode.isGoalsCategory(event.getValue()) ||
-                    CategoryCode.isTransferCategory(event.getValue()))) {
-                account.setLabel("Debit account");
+            Category selectedCategory = event.getValue();
+            if (selectedCategory == null) return;
+            if (CategoryCode.isGoalsCategory(selectedCategory) ||
+                CategoryCode.isTransferCategory(selectedCategory)) {
+                debitAccount.setVisible(true);
                 creditAccount.setVisible(true);
+            } else if (CategoryCode.isIncomeCategory(selectedCategory)) {
+                debitAccount.setVisible(false);
+                creditAccount.setVisible(true);
+            } else if (CategoryCode.isOutgoingCategory(selectedCategory)) {
+                debitAccount.setVisible(true);
+                creditAccount.setVisible(false);
+            } else {
+                throw new InvalidCategoryCodeException();
             }
         });
     }
@@ -189,7 +200,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
     private void bindTransactionWithUiElements() {
         category.setValue(transaction.getCategory());
-        account.setValue(transaction.getAccount());
+        debitAccount.setValue(transaction.getAccount());
         creditAccount.setValue(null);
         valueDatePicker.setValue(transaction.getDate());
         amount.setValue(transaction.getAmount());
@@ -198,7 +209,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
     private void bindUiElementsWithTransaction() {
         transaction.setCategory(category.getValue());
-        transaction.setAccount(account.getValue());
+        transaction.setAccount(debitAccount.getValue());
         transaction.setDate(valueDatePicker.getValue());
         transaction.setAmount(amount.getValue());
         transaction.setComment(comment.getValue());

@@ -22,4 +22,12 @@ public enum CategoryCode {
     public static boolean isTransferCategory(Category category) {
         return category.getType().equals(CategoryCode.TRANSFER.getCode());
     }
+
+    public static boolean isIncomeCategory(Category category) {
+        return category.getType().equals(CategoryCode.INCOME.getCode());
+    }
+
+    public static boolean isOutgoingCategory(Category category) {
+        return category.getType().equals(CategoryCode.OUTGO.getCode());
+    }
 }
