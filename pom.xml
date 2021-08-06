@@ -24,9 +24,6 @@
 		<vaadin.version>14.4.6</vaadin.version>
 		<app.version>1.0</app.version>
 		<testng.version>6.14.3</testng.version>
-		<google-api-client.version>1.30.4</google-api-client.version>
-		<google-oauth-client-jetty.version>1.30.6</google-oauth-client-jetty.version>
-		<google-api-services-sheets.version>v4-rev581-1.25.0</google-api-services-sheets.version>
 		<lombok.version>1.18.16</lombok.version>
 	</properties>
 
@@ -60,21 +57,6 @@
 			<artifactId>testng</artifactId>
 			<version>${testng.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.api-client</groupId>
-			<artifactId>google-api-client</artifactId>
-			<version>${google-api-client.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.oauth-client</groupId>
-			<artifactId>google-oauth-client-jetty</artifactId>
-			<version>${google-oauth-client-jetty.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-sheets</artifactId>
-			<version>${google-api-services-sheets.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
