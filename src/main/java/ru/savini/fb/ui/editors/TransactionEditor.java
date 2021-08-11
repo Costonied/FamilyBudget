@@ -1,5 +1,6 @@
 package ru.savini.fb.ui.editors;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDate;
@@ -67,9 +68,10 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.transactionController = transactionController;
 
         initDebitAccountBehaviour();
-        initButtonsBehaviour();
+        initButtonsBehaviourAndState();
         initCategoryBehaviour();
         initCreditAccountBehaviour();
+        initAmountBehaviour();
 
         setSpacing(true);
         add(category, valueDatePicker, amount, debitAccount, creditAccount, comment, actions);
@@ -142,20 +144,18 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
     private void initDebitAccountBehaviour() {
         debitAccount = new ComboBox<>("Debit account");
-        debitAccount.setItemLabelGenerator(Account::getName);
         debitAccount.setClearButtonVisible(true);
-        debitAccount.addFocusListener(event -> {
-            updateAccountsComboBoxData(debitAccount, creditAccount);
-        });
+        debitAccount.setItemLabelGenerator(Account::getName);
+        debitAccount.addFocusListener(event -> updateAccountsComboBoxData(debitAccount, creditAccount));
+        debitAccount.addValueChangeListener(event -> switchEnablerSaveButton());
     }
 
     private void initCreditAccountBehaviour() {
         creditAccount = new ComboBox<>("Credit account");
-        creditAccount.setItemLabelGenerator(Account::getName);
         creditAccount.setClearButtonVisible(true);
-        creditAccount.addFocusListener(event -> {
-            updateAccountsComboBoxData(creditAccount, debitAccount);
-        });
+        creditAccount.setItemLabelGenerator(Account::getName);
+        creditAccount.addFocusListener(event -> updateAccountsComboBoxData(creditAccount, debitAccount));
+        creditAccount.addValueChangeListener(event -> switchEnablerSaveButton());
     }
 
     private void initCategoryBehaviour() {
@@ -177,17 +177,32 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
             } else {
                 throw new InvalidCategoryCodeException();
             }
+            switchEnablerSaveButton();
         });
     }
 
-    private void initButtonsBehaviour() {
-        save.getElement().getThemeList().add("primary");
+    private void initButtonsBehaviourAndState() {
+        initSaveButtonBehaviourAndState();
+        initSaveAndNewButtonBehaviourAndState();
         delete.getElement().getThemeList().add("error");
-        saveAndNew.getElement().getThemeList().add("primary");
         cancel.addClickListener(e -> cancel());
         delete.addClickListener(e -> delete());
+    }
+
+    private void initSaveButtonBehaviourAndState() {
+        save.setEnabled(false);
+        save.getElement().getThemeList().add("primary");
         save.addClickListener(e -> save(false));
+    }
+
+    private void initSaveAndNewButtonBehaviourAndState() {
+        saveAndNew.setEnabled(false);
+        saveAndNew.getElement().getThemeList().add("primary");
         saveAndNew.addClickListener(e -> save(true));
+    }
+
+    private void initAmountBehaviour() {
+        amount.addValueChangeListener(event -> switchEnablerSaveButton());
     }
 
     private void updateAccountsComboBoxData(ComboBox<Account> selectedAccount, ComboBox<Account> anotherAccount) {
@@ -213,5 +228,26 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         transaction.setDate(valueDatePicker.getValue());
         transaction.setAmount(amount.getValue());
         transaction.setComment(comment.getValue());
+    }
+
+    private void switchEnablerSaveButton() {
+        if (isAllFieldValidForSaveButton()) {
+            save.setEnabled(true);
+            saveAndNew.setEnabled(true);
+        } else {
+            save.setEnabled(false);
+            saveAndNew.setEnabled(false);
+        }
+    }
+
+    private boolean isAllFieldValidForSaveButton() {
+        try {
+            return (category.isVisible() && !category.getValue().getName().isEmpty()) &&
+                    (!debitAccount.isVisible() || (debitAccount.isVisible() && !debitAccount.getValue().getName().isEmpty())) &&
+                    (!creditAccount.isVisible() || (creditAccount.isVisible() && !creditAccount.getValue().getName().isEmpty())) &&
+                    !amount.getValue().equals(new BigDecimal(0));
+        } catch (NullPointerException e) {
+            return false;
+        }
     }
 }
