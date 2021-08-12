@@ -39,15 +39,15 @@ public class TransactionView extends VerticalLayout {
 
         // Connect selected Transaction to editor or hide if none is selected
         grid.asSingleSelect()
-                .addValueChangeListener(e -> editor.editTransaction(e.getValue()));
+                .addValueChangeListener(e -> editor.editTransaction(transactionController.getEventFromTransaction(e.getValue())));
 
         // Instantiate and edit new Category the new button is clicked
-        addNewBtn.addClickListener(e -> editor.addTransaction(new Transaction()));
+        addNewBtn.addClickListener(e -> editor.addTransaction());
 
         // Listen changes made by the editor, refresh data from backend
         editor.setChangeHandler(isNeededNewTransaction -> {
             if (isNeededNewTransaction) {
-                editor.addTransaction(new Transaction());
+                editor.addTransaction();
             } else {
                 editor.setVisible(false);
             }

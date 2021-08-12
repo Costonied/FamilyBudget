@@ -23,11 +23,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.domain.entity.TransactionEvent;
 import ru.savini.fb.domain.enums.CategoryCode;
-import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.controller.TransactionController;
+import ru.savini.fb.domain.enums.TransactionType;
 import ru.savini.fb.exceptions.InvalidCategoryCodeException;
 
 @UIScope
@@ -35,7 +36,7 @@ import ru.savini.fb.exceptions.InvalidCategoryCodeException;
 public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionEditor.class);
 
-    private Transaction transaction;
+    private TransactionEvent transactionEvent;
     private final AccountController accountController;
     private final CategoryController categoryController;
     private final TransactionController transactionController;
@@ -67,6 +68,8 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.categoryController = categoryController;
         this.transactionController = transactionController;
 
+        transactionEvent = new TransactionEvent();
+
         initDebitAccountBehaviour();
         initButtonsBehaviourAndState();
         initCategoryBehaviour();
@@ -83,13 +86,13 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     void save(boolean isNeededNewTransaction) {
-        bindUiElementsWithTransaction();
-        transactionController.save(transaction, creditAccount.getValue());
+        bindUiElementsWithTransactionEvent();
+        transactionController.save(transactionEvent);
         changeHandler.onChange(isNeededNewTransaction);
     }
 
     void delete() {
-        transactionController.delete(transaction);
+        transactionController.delete(transactionEvent);
         changeHandler.onChange(false);
     }
 
@@ -97,32 +100,42 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         setVisible(false);
     }
 
-    public final void editTransaction(Transaction transaction) {
-        // Transaction could be null after refresh
-        if (transaction == null) {
+    public final void editTransaction(TransactionEvent transactionEvent) {
+        // Transaction event could be null after refresh
+        if (transactionEvent == null) {
             setVisible(false);
             return;
         }
         this.refreshComboBoxData();
-        this.transaction = transaction;
-        bindTransactionWithUiElements();
+        this.transactionEvent = transactionEvent;
+        transactionEvent.setId(transactionEvent.getId());
+        bindTransactionEventWithUiElements();
         amount.focus();
         cancel.setVisible(true);
         delete.setVisible(true);
-        creditAccount.setVisible(false);
+        if (creditAccount.getValue() != null) {
+            creditAccount.setVisible(true);
+            debitAccount.setVisible(false);
+        } else {
+            creditAccount.setVisible(false);
+            debitAccount.setVisible(true);
+        }
         setVisible(true);
-        LOGGER.debug("Selected transaction [{}]", transaction);
     }
 
-    public final void addTransaction(Transaction transaction) {
+    public final void addTransaction() {
+        this.clearTransactionEvent();
         this.refreshComboBoxData();
-        this.transaction = transaction;
-        bindTransactionWithUiElements();
+        bindTransactionEventWithUiElements();
         cancel.setVisible(true);
         delete.setVisible(false);
         debitAccount.setVisible(false);
         creditAccount.setVisible(false);
         setVisible(true);
+    }
+
+    private void clearTransactionEvent() {
+        this.transactionEvent = new TransactionEvent();
     }
 
     public interface ChangeHandler {
@@ -213,21 +226,22 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         selectedAccount.setValue(currentAcc);
     }
 
-    private void bindTransactionWithUiElements() {
-        category.setValue(transaction.getCategory());
-        debitAccount.setValue(transaction.getAccount());
-        creditAccount.setValue(null);
-        valueDatePicker.setValue(transaction.getDate());
-        amount.setValue(transaction.getAmount());
-        comment.setValue(transaction.getComment());
+    private void bindTransactionEventWithUiElements() {
+        category.setValue(transactionEvent.getCategory());
+        valueDatePicker.setValue(transactionEvent.getDate());
+        amount.setValue(transactionEvent.getAmount());
+        comment.setValue(transactionEvent.getComment());
+        this.debitAccount.setValue(transactionEvent.getDebitAccount());
+        this.creditAccount.setValue(transactionEvent.getCreditAccount());
     }
 
-    private void bindUiElementsWithTransaction() {
-        transaction.setCategory(category.getValue());
-        transaction.setAccount(debitAccount.getValue());
-        transaction.setDate(valueDatePicker.getValue());
-        transaction.setAmount(amount.getValue());
-        transaction.setComment(comment.getValue());
+    private void bindUiElementsWithTransactionEvent() {
+        transactionEvent.setCategory(category.getValue());
+        transactionEvent.setDebitAccount(debitAccount.getValue());
+        transactionEvent.setCreditAccount(creditAccount.getValue());
+        transactionEvent.setDate(valueDatePicker.getValue());
+        transactionEvent.setAmount(amount.getValue());
+        transactionEvent.setComment(comment.getValue());
     }
 
     private void switchEnablerSaveButton() {

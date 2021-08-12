@@ -17,6 +17,7 @@ import ru.savini.fb.repo.TransactionPairRepo;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
+import ru.savini.fb.domain.entity.TransactionEvent;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,28 +46,55 @@ public class TransactionControllerImpl implements TransactionController {
 
     @Transactional
     @Override
-    public void save(Transaction transaction, Account creditAccount) {
-        if (isSplittedTransaction(transaction)) {
-            processAndSaveSplittedTransactions(transaction, creditAccount);
-            return;
+    public void save(TransactionEvent transactionEvent) {
+        Transaction debitTransaction;
+        Transaction creditTransaction;
+        Transaction baseTransaction = getBaseTransactionFromEvent(transactionEvent);
+
+        if (isPairedTransaction(transactionEvent.getCategory())) {
+            debitTransaction = new Transaction(baseTransaction, transactionEvent.getDebitAccount(), TransactionType.DEBIT.getType());
+            creditTransaction = new Transaction(baseTransaction, transactionEvent.getCreditAccount(), TransactionType.CREDIT.getType());
+            processAndSavePairedTransactions(debitTransaction, creditTransaction);
+        } else if (CategoryCode.isIncomeCategory(transactionEvent.getCategory())) {
+            creditTransaction = new Transaction(baseTransaction, transactionEvent.getCreditAccount(), TransactionType.CREDIT.getType());
+            processAndSaveTransaction(creditTransaction);
+        } else if (CategoryCode.isOutgoingCategory(transactionEvent.getCategory())) {
+            debitTransaction = new Transaction(baseTransaction, transactionEvent.getDebitAccount(), TransactionType.DEBIT.getType());
+            processAndSaveTransaction(debitTransaction);
         }
+    }
+
+    private void processAndSaveTransaction(Transaction transaction) {
         // check does it transaction edit
         if (transaction.getId() != null) {
             Transaction originalTransaction = transactionRepo.getOne(transaction.getId());
             changeAccountAmount(originalTransaction, transaction);
             changeAccountingUnitFactAmount(originalTransaction, transaction);
         } else {
-            setTransactionType(transaction);
-            setCorrectAccount(transaction, creditAccount);
             changeAccountAmount(transaction);
             changeAccountingUnitFactAmount(transaction);
         }
         transactionRepo.save(transaction);
     }
 
+    private Transaction getBaseTransactionFromEvent(TransactionEvent event) {
+        Transaction baseTransaction = new Transaction();
+        baseTransaction.setCategory(event.getCategory());
+        baseTransaction.setAmount(event.getAmount());
+        baseTransaction.setComment(event.getComment());
+        baseTransaction.setDate(event.getDate());
+        baseTransaction.setId(event.getId());
+        return baseTransaction;
+    }
+
+    private boolean isPairedTransaction(Category transactionCategory) {
+        return CategoryCode.isGoalsCategory(transactionCategory) ||
+                CategoryCode.isTransferCategory(transactionCategory);
+    }
+
     @Override
-    public void delete(Transaction transaction) {
-        transactionRepo.delete(transaction);
+    public void delete(TransactionEvent transactionEvent) {
+        transactionRepo.deleteById(transactionEvent.getId());
     }
 
     @Override
@@ -137,35 +165,7 @@ public class TransactionControllerImpl implements TransactionController {
         AccountingUnit editedAccountingUnit = accountingUnitController
                 .getByCategoryAndLocalDate(transCategory, editedTransDate);
         accountingUnitController.decreaseFactAmount(originalAccountingUnit, originalTransMoney);
-        accountingUnitController.decreaseFactAmount(editedAccountingUnit, editedTransMoney);
-    }
-
-    private void setTransactionType(Transaction transaction) {
-        String transCategoryType = transaction.getCategory().getType();
-        if (transCategoryType.equalsIgnoreCase(CategoryCode.OUTGO.getCode())) {
-            transaction.setType(TransactionType.DEBIT.getType());
-        } else if (transCategoryType.equalsIgnoreCase(CategoryCode.INCOME.getCode())) {
-            transaction.setType(TransactionType.CREDIT.getType());
-        }
-    }
-
-    private void setCorrectAccount(Transaction transaction, Account creditAccount) {
-        if (CategoryCode.isIncomeCategory(transaction.getCategory())) {
-            transaction.setAccount(creditAccount);
-        }
-    }
-
-    private Transaction splitAndGetCreditPart(Transaction transaction, Account creditAccount) {
-        transaction.setType(TransactionType.DEBIT.getType());
-        Transaction creditTransaction = new Transaction(transaction);
-        creditTransaction.setAccount(creditAccount);
-        creditTransaction.setType(TransactionType.CREDIT.getType());
-        return creditTransaction;
-    }
-
-    private boolean isSplittedTransaction(Transaction transaction) {
-        return CategoryCode.isGoalsCategory(transaction.getCategory()) ||
-                CategoryCode.isTransferCategory(transaction.getCategory());
+        accountingUnitController.increaseFactAmount(editedAccountingUnit, editedTransMoney);
     }
 
     private boolean isCreditTransaction(Transaction transaction) {
@@ -176,14 +176,50 @@ public class TransactionControllerImpl implements TransactionController {
         return firstTrans.getAccount().getId().equals(secondTrans.getAccount().getId());
     }
 
-    private void processAndSaveSplittedTransactions(Transaction debitTransaction, Account creditAccount) {
-        Transaction creditTransaction = splitAndGetCreditPart(debitTransaction, creditAccount);
-        TransactionPair transactionPair = new TransactionPair(debitTransaction, creditTransaction);
+    private void processAndSavePairedTransactions(Transaction debitTransaction, Transaction creditTransaction) {
+        // check does it transaction edit
+        if (debitTransaction.getId() != null) {
+            TransactionPair transactionPair;
+            Transaction originalPairTransaction;
+            long originalEditedTransactionId = debitTransaction.getId();
+            Transaction originalEditedTransaction = transactionRepo.getOne(originalEditedTransactionId);
+            String originalEditedTransactionType = originalEditedTransaction.getType();
+            if (TransactionType.CREDIT.getType().equals(originalEditedTransactionType)) {
+                transactionPair = transactionPairRepo.getTransactionPairByCreditTransaction(originalEditedTransaction);
+                originalPairTransaction = transactionPair.getDebitTransaction();
+                debitTransaction.setId(originalPairTransaction.getId());
+                debitTransaction.setAccount(originalPairTransaction.getAccount());
+                debitTransaction.setAmount(creditTransaction.getAmount());
+                changeAccountAmount(originalEditedTransaction, creditTransaction);
+                changeAccountAmount(originalPairTransaction, debitTransaction);
+                changeAccountingUnitFactAmount(originalPairTransaction, debitTransaction);
+            } else {
+                transactionPair = transactionPairRepo.getTransactionPairByDebitTransaction(originalEditedTransaction);
+                originalPairTransaction = transactionPair.getCreditTransaction();
+                creditTransaction.setId(originalPairTransaction.getId());
+                creditTransaction.setAccount(originalPairTransaction.getAccount());
+                creditTransaction.setAmount(debitTransaction.getAmount());
+                changeAccountAmount(originalEditedTransaction, debitTransaction);
+                changeAccountAmount(originalPairTransaction, creditTransaction);
+                changeAccountingUnitFactAmount(originalEditedTransaction, debitTransaction);
+            }
+        } else {
+            changeAccountAmount(debitTransaction);
+            changeAccountAmount(creditTransaction);
+            changeAccountingUnitFactAmount(debitTransaction);
+            TransactionPair transactionPair = new TransactionPair(debitTransaction, creditTransaction);
+            transactionPairRepo.save(transactionPair);
+        }
         transactionRepo.save(debitTransaction);
         transactionRepo.save(creditTransaction);
-        transactionPairRepo.save(transactionPair);
-        changeAccountAmount(debitTransaction);
-        changeAccountAmount(creditTransaction);
-        changeAccountingUnitFactAmount(debitTransaction);
+    }
+
+    @Override
+    public TransactionEvent getEventFromTransaction(Transaction transaction) {
+        if (transaction == null) {
+            return null;
+        } else {
+            return new TransactionEvent(transaction);
+        }
     }
 }
