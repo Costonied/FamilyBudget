@@ -31,10 +31,13 @@ public class Transaction {
         this.date = LocalDate.now();
     }
 
-    public Transaction(Transaction fromTransaction) {
+    public Transaction(Transaction fromTransaction, Account account, String type) {
+        this.id = fromTransaction.getId();
         this.date = fromTransaction.getDate();
         this.amount = fromTransaction.getAmount();
         this.comment = fromTransaction.getComment();
         this.category = fromTransaction.getCategory();
+        this.account = account;
+        this.type = type;
     }
 }
