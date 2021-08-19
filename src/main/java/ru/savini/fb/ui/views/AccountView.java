@@ -9,7 +9,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 import org.springframework.util.StringUtils;
 
 import ru.savini.fb.domain.entity.Account;
@@ -20,7 +19,6 @@ import java.math.BigDecimal;
 
 @Route(value = "accounts", layout = MainView.class)
 @PageTitle("Accounts")
-@RouteAlias(value = "", layout = MainView.class)
 public class AccountView extends VerticalLayout {
 
     private final AccountController accountController;
