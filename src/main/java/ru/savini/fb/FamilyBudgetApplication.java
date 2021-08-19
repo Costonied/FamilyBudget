@@ -2,6 +2,7 @@ package ru.savini.fb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,7 +14,7 @@ import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.repo.AccountRepo;
 import ru.savini.fb.controller.CategoryController;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
 public class FamilyBudgetApplication {
     private static final Logger LOGGER = LoggerFactory.getLogger(FamilyBudgetApplication.class);
 
