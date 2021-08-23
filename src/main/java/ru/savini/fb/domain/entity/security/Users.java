@@ -10,7 +10,7 @@ import java.util.Set;
 public class Users {
     @Id String username;
     @Column(nullable = false) String password;
-    @Column(columnDefinition="tinyint(1) default 1", nullable = false) Boolean enabled;
+    @Column(nullable = false) Boolean enabled;
 
     @OneToMany(mappedBy="username")
     private Set<Authorities> authorities;
