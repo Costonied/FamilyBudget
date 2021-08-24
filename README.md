@@ -8,6 +8,11 @@ Family Budget App working on Vaadin
 * DATABASE_URL 
   * PostgreSQL example `DATABASE_URL=postgresql://localhost:5432/db_name`
 
+# Add users
+1. Use `ru.savini.fb.security.ManualPasswordEncoderUtil` for encrypt user password
+2. Add user record to `USERS` table (save encrypted password)
+3. Add authority record for user in `AUTHORITHIES` table (**mandatory**). Add any authority because app not support roles now
+
 # Local start
 * Spring Boot
 * Main class `ru.savini.fb.FamilyBudgetApplication`
