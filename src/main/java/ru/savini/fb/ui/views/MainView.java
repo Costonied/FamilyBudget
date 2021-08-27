@@ -58,7 +58,7 @@ public class MainView extends AppLayout {
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.add(new H1("FB"));
         Anchor logout = new Anchor("logout", "Log out");
-        layout.add(logout, logoLayout, menu);
+        layout.add(logoLayout, menu, logout);
         return layout;
     }
 
