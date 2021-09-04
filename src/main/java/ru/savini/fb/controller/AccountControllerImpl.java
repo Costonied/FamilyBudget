@@ -67,4 +67,14 @@ public class AccountControllerImpl implements AccountController {
         Optional<Account> optionalAccount = repository.findById(accountId);
         return optionalAccount.orElseThrow(NoSuchAccountIdException::new);
     }
+
+    @Override
+    public List<Account> getAllByNeedAccountingIsTrue() {
+        return repository.getAllByNeedAccountingIsTrue();
+    }
+
+    @Override
+    public List<Account> getAllByNeedAccountingIsFalse() {
+        return repository.getAllByNeedAccountingIsFalse();
+    }
 }

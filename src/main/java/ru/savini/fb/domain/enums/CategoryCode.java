@@ -3,7 +3,7 @@ package ru.savini.fb.domain.enums;
 import ru.savini.fb.domain.entity.Category;
 
 public enum CategoryCode {
-    INCOME("INCOME"), OUTGO("OUTGO"), GOALS("GOALS"), TRANSFER("TRANSFER");
+    INCOME("INCOME"), OUTGO("OUTGO"), GOALS("GOALS"), TRANSFER("TRANSFER"), WITHDRAWAL("WITHDRAWAL");
 
     private String code;
 
@@ -29,5 +29,9 @@ public enum CategoryCode {
 
     public static boolean isOutgoingCategory(Category category) {
         return category.getType().equals(CategoryCode.OUTGO.getCode());
+    }
+
+    public static boolean isWithdrawalCategory(Category category) {
+        return category.getType().equals(CategoryCode.WITHDRAWAL.getCode());
     }
 }

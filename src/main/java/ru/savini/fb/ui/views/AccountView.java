@@ -39,7 +39,7 @@ public class AccountView extends VerticalLayout {
         add(actions, grid, editor);
 
         grid.setHeight("300px");
-        grid.setColumns("id", "name", "amount", "currency");
+        grid.setColumns("id", "name", "amount", "currency", "needAccounting");
         grid.getColumnByKey("id").setWidth("50px").setFlexGrow(0);
 
         filter.setPlaceholder("Filter by name");

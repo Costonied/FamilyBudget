@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface CategoryRepo extends JpaRepository<Category, Integer> {
     List<Category> findByNameStartsWithIgnoreCase(String name);
+    int countByTypeEquals(String categoryType);
 }

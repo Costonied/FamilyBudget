@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,6 +23,8 @@ public class Account {
     private BigDecimal amount;
     private String name;
     private String currency;
+    @Column(columnDefinition = "boolean default false")
+    private boolean needAccounting;
     @Transient private Money money;
 
     protected Account() {

@@ -8,6 +8,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -42,6 +43,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     TextField name = new TextField("Account name");
     BigDecimalField amount = new BigDecimalField("Amount");
     ComboBox<String> currency;
+    Checkbox needAccounting = new Checkbox("Need accounting");
 
     /* Action buttons */
     Button save = new Button("Save", VaadinIcon.CHECK.create());
@@ -58,7 +60,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         this.accountController = accountController;
         initBinder();
 
-        add(name, amount, currency, actions);
+        add(name, amount, currency, needAccounting, actions);
         // Configure and style components
         setSpacing(true);
 
@@ -79,6 +81,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         binder.forField(amount)
                 .bind(Account::getAmount, Account::setAmount);
         binder.forField(currency).bind(Account::getName, (c, a) -> c.setCurrency(currency.getValue()));
+        binder.forField(needAccounting).bind(Account::isNeedAccounting, Account::setNeedAccounting);
 
         // bind using naming convention
         binder.bindInstanceFields(this);

@@ -12,6 +12,7 @@ import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.TransactionPair;
 import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.enums.TransactionType;
+import ru.savini.fb.exceptions.InvalidCategoryCodeException;
 import ru.savini.fb.repo.TransactionRepo;
 import ru.savini.fb.repo.TransactionPairRepo;
 import ru.savini.fb.domain.entity.Account;
@@ -55,12 +56,18 @@ public class TransactionControllerImpl implements TransactionController {
             debitTransaction = new Transaction(baseTransaction, transactionEvent.getDebitAccount(), TransactionType.DEBIT.getType());
             creditTransaction = new Transaction(baseTransaction, transactionEvent.getCreditAccount(), TransactionType.CREDIT.getType());
             processAndSavePairedTransactions(debitTransaction, creditTransaction);
-        } else if (CategoryCode.isIncomeCategory(transactionEvent.getCategory())) {
+        }
+        else if (CategoryCode.isIncomeCategory(transactionEvent.getCategory())) {
             creditTransaction = new Transaction(baseTransaction, transactionEvent.getCreditAccount(), TransactionType.CREDIT.getType());
             processAndSaveTransaction(creditTransaction);
-        } else if (CategoryCode.isOutgoingCategory(transactionEvent.getCategory())) {
+        }
+        else if (CategoryCode.isOutgoingCategory(transactionEvent.getCategory()) ||
+                CategoryCode.isWithdrawalCategory(transactionEvent.getCategory())) {
             debitTransaction = new Transaction(baseTransaction, transactionEvent.getDebitAccount(), TransactionType.DEBIT.getType());
             processAndSaveTransaction(debitTransaction);
+        }
+        else {
+            throw new InvalidCategoryCodeException();
         }
     }
 
@@ -72,7 +79,9 @@ public class TransactionControllerImpl implements TransactionController {
             changeAccountingUnitFactAmount(originalTransaction, transaction);
         } else {
             changeAccountAmount(transaction);
-            changeAccountingUnitFactAmount(transaction);
+            if (transaction.getAccount().isNeedAccounting()) {
+                changeAccountingUnitFactAmount(transaction);
+            }
         }
         transactionRepo.save(transaction);
     }
