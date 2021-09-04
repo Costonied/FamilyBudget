@@ -15,4 +15,6 @@ public interface CategoryController {
     List<String> getCategoryCodes();
 
     boolean isRepoEmpty();
+    boolean hasWithdrawalCategory();
+    boolean hasTransferCategory();
 }

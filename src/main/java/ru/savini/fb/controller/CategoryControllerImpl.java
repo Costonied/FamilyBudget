@@ -61,4 +61,14 @@ public class CategoryControllerImpl implements CategoryController {
     public boolean isRepoEmpty() {
         return this.getAll().isEmpty();
     }
+
+    @Override
+    public boolean hasWithdrawalCategory() {
+        return categoryRepo.countByTypeEquals(CategoryCode.WITHDRAWAL.getCode()) > 0;
+    }
+
+    @Override
+    public boolean hasTransferCategory() {
+        return categoryRepo.countByTypeEquals(CategoryCode.TRANSFER.getCode()) > 0;
+    }
 }

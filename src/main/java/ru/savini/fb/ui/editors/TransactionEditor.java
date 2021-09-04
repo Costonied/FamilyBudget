@@ -149,7 +149,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void refreshComboBoxData() {
-        accounts = accountController.getAll();
+        accounts = accountController.getAllByNeedAccountingIsTrue();
         debitAccount.setItems(accounts);
         creditAccount.setItems(accounts);
         category.setItems(categoryController.getAll());
@@ -159,7 +159,20 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         debitAccount = new ComboBox<>("Debit account");
         debitAccount.setClearButtonVisible(true);
         debitAccount.setItemLabelGenerator(Account::getName);
-        debitAccount.addFocusListener(event -> updateAccountsComboBoxData(debitAccount, creditAccount));
+        debitAccount.addFocusListener(event -> {
+            if (CategoryCode.isWithdrawalCategory(category.getValue())) {
+                initAccountsNotForAccounting(debitAccount);
+            }
+            else if (CategoryCode.isOutgoingCategory(category.getValue())) {
+                initAccountsForAccounting(debitAccount);
+            }
+            else if (CategoryCode.isTransferCategory(category.getValue())) {
+                updateAccountsComboBoxData(debitAccount, creditAccount);
+            }
+            else {
+                throw new InvalidCategoryCodeException();
+            }
+        });
         debitAccount.addValueChangeListener(event -> switchEnablerSaveButton());
     }
 
@@ -184,7 +197,8 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
             } else if (CategoryCode.isIncomeCategory(selectedCategory)) {
                 debitAccount.setVisible(false);
                 creditAccount.setVisible(true);
-            } else if (CategoryCode.isOutgoingCategory(selectedCategory)) {
+            } else if (CategoryCode.isOutgoingCategory(selectedCategory) ||
+                    CategoryCode.isWithdrawalCategory(selectedCategory)) {
                 debitAccount.setVisible(true);
                 creditAccount.setVisible(false);
             } else {
@@ -219,11 +233,19 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void updateAccountsComboBoxData(ComboBox<Account> selectedAccount, ComboBox<Account> anotherAccount) {
-        List<Account> correctedAccounts = new ArrayList<>(accounts);
+        List<Account> correctedAccounts = accountController.getAll();
         correctedAccounts.remove(anotherAccount.getValue());
         Account currentAcc = selectedAccount.getValue();
         selectedAccount.setItems(correctedAccounts);
         selectedAccount.setValue(currentAcc);
+    }
+
+    private void initAccountsForAccounting(ComboBox<Account> accounts) {
+        accounts.setItems(accountController.getAllByNeedAccountingIsTrue());
+    }
+
+    private void initAccountsNotForAccounting(ComboBox<Account> accounts) {
+        accounts.setItems(accountController.getAllByNeedAccountingIsFalse());
     }
 
     private void bindTransactionEventWithUiElements() {
