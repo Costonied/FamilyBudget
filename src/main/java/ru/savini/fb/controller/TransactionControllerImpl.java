@@ -110,8 +110,8 @@ public class TransactionControllerImpl implements TransactionController {
     }
 
     @Override
-    public List<Transaction> getAll() {
-        return transactionRepo.findAll();
+    public List<Transaction> getAllByOrderByDateDesc() {
+        return transactionRepo.getAllByOrderByDateDesc();
     }
 
     private void changeAccountAmount(Transaction transaction) {

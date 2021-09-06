@@ -19,7 +19,7 @@ public class TransactionView extends VerticalLayout {
     final Grid<Transaction> grid;
     private final Button addNewBtn;
     private final TransactionEditor editor;
-    private final TransactionController transactionController;
+    private final transient TransactionController transactionController;
 
     public TransactionView(TransactionEditor editor,
                            TransactionController transactionController) {
@@ -59,7 +59,7 @@ public class TransactionView extends VerticalLayout {
     }
 
     void setListOfTransactions() {
-        grid.setItems(transactionController.getAll());
+        grid.setItems(transactionController.getAllByOrderByDateDesc());
     }
 
     private void setGridColumns() {
