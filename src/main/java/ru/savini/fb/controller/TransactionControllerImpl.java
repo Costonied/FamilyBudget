@@ -67,6 +67,7 @@ public class TransactionControllerImpl implements TransactionController {
             processAndSaveTransaction(debitTransaction);
         }
         else {
+            LOGGER.error("Not recognize category code [{}] while saving transaction", transactionEvent.getCategory().getType());
             throw new InvalidCategoryCodeException();
         }
     }
@@ -76,7 +77,9 @@ public class TransactionControllerImpl implements TransactionController {
         if (transaction.getId() != null) {
             Transaction originalTransaction = transactionRepo.getOne(transaction.getId());
             changeAccountAmount(originalTransaction, transaction);
-            changeAccountingUnitFactAmount(originalTransaction, transaction);
+            if (transaction.getAccount().isNeedAccounting()) {
+                changeAccountingUnitFactAmount(originalTransaction, transaction);
+            }
         } else {
             changeAccountAmount(transaction);
             if (transaction.getAccount().isNeedAccounting()) {
