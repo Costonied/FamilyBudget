@@ -1,11 +1,14 @@
 package ru.savini.fb.ui.views;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -14,6 +17,7 @@ import org.springframework.util.StringUtils;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.ui.editors.AccountEditor;
 import ru.savini.fb.controller.AccountController;
+import ru.savini.fb.ui.helpers.CurrencyHelper;
 
 import java.math.BigDecimal;
 
@@ -30,7 +34,7 @@ public class AccountView extends VerticalLayout {
     public AccountView(AccountController accountController, AccountEditor editor) {
         this.editor = editor;
         this.filter = new TextField();
-        this.grid = new Grid<>(Account.class);
+        this.grid = new Grid<>(Account.class, false);
         this.accountController = accountController;
         this.addNewBtn = new Button("New account", VaadinIcon.PLUS.create());
 
@@ -39,8 +43,15 @@ public class AccountView extends VerticalLayout {
         add(actions, grid, editor);
 
         grid.setHeight("300px");
-        grid.setColumns("id", "name", "amount", "currency", "needAccounting");
-        grid.getColumnByKey("id").setWidth("50px").setFlexGrow(0);
+        grid.addColumn(Account::getName).setHeader("Name");
+        grid.addColumn(new NumberRenderer<>(Account::getAmount, CurrencyHelper.format)).setHeader("Amount");
+        grid.addColumn(Account::getCurrency).setHeader("Currency");
+        grid.addColumn(new ComponentRenderer<>(account -> {
+            Checkbox checkbox = new Checkbox();
+            checkbox.setValue(account.isNeedAccounting());
+            checkbox.setReadOnly(true);
+            return checkbox;})
+        ).setHeader("Need accounting");
 
         filter.setPlaceholder("Filter by name");
 

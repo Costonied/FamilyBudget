@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.domain.entity.Account;
-import ru.savini.fb.ui.helpers.AccountHelper;
+import ru.savini.fb.ui.helpers.CurrencyHelper;
+
+import java.util.Locale;
 
 /**
  * A simple example to introduce building forms. As your real application is probably much
@@ -59,6 +61,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     public AccountEditor(AccountController accountController) {
         this.accountController = accountController;
         initBinder();
+        amount.setLocale(new Locale("ru-RU"));
 
         add(name, amount, currency, needAccounting, actions);
         // Configure and style components
@@ -72,7 +75,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         // wire action buttons to save, delete and reset
         save.addClickListener(e -> save());
         delete.addClickListener(e -> delete());
-        cancel.addClickListener(e -> editAccount(account));
+        cancel.addClickListener(e -> this.cancelEditing());
         setVisible(false);
     }
 
@@ -89,7 +92,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
 
     private void initCurrencyCodes() {
         currency = new ComboBox<>("List of currency codes");
-        currency.setItems(AccountHelper.getCurrencyCode());
+        currency.setItems(CurrencyHelper.getCurrencyCode());
     }
 
     void delete() {
@@ -100,6 +103,11 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     void save() {
         accountController.save(account);
         changeHandler.onChange();
+    }
+
+    void cancelEditing() {
+        this.account = null;
+        super.setVisible(false);
     }
 
     public interface ChangeHandler {
