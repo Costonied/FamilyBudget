@@ -8,6 +8,6 @@ import ru.savini.fb.domain.entity.TransactionEvent;
 public interface TransactionController {
     void save(TransactionEvent transactionEvent);
     void delete(TransactionEvent transaction);
-    List<Transaction> getAll();
+    List<Transaction> getAllByOrderByDateDesc();
     TransactionEvent getEventFromTransaction(Transaction transaction);
 }
