@@ -24,7 +24,7 @@ Family Budget App working on Vaadin
 ## Deploy on Heroku
 [Full tutorial from Heroku](https://vaadin.com/learn/tutorials/cloud-deployment/heroku)
 * Setup PostgreSQL addon on Heroku and check DATABASE_URL environment variable
-* Deploy: `heroku deploy:jar family-budget-1.0.jar --app APP_NAME`  
+* Deploy: `heroku deploy:jar ./target/family-budget-1.0.jar --app APP_NAME`  
 * Check that webserver (heroku dyno) is started OR start it
 ## Useful Heroku CLI commands
 * See logs: `heroku logs --tail --app APP_NAME`  
