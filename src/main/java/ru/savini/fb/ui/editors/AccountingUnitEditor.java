@@ -60,6 +60,8 @@ public class AccountingUnitEditor extends VerticalLayout implements KeyNotifier 
         delete.addClickListener(e -> delete());
         cancel.addClickListener(e -> editAccountingUnit(accountingUnit));
         category.setItemLabelGenerator(Category::getName);
+        planAmount.setPlaceholder("0.00");
+        factAmount.setPlaceholder("0.00");
         setVisible(false);
     }
 
