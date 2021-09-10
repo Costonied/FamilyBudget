@@ -62,6 +62,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         this.accountController = accountController;
         initBinder();
         amount.setLocale(new Locale("ru-RU"));
+        amount.setPlaceholder("0.00");
 
         add(name, amount, currency, needAccounting, actions);
         // Configure and style components

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.time.LocalDate;
 
+import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.textfield.BigDecimalField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,6 @@ import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.controller.CategoryController;
 import ru.savini.fb.controller.TransactionController;
-import ru.savini.fb.domain.enums.TransactionType;
 import ru.savini.fb.exceptions.InvalidCategoryCodeException;
 
 @UIScope
@@ -159,20 +159,6 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         debitAccount = new ComboBox<>("Debit account");
         debitAccount.setClearButtonVisible(true);
         debitAccount.setItemLabelGenerator(Account::getName);
-        debitAccount.addFocusListener(event -> {
-            if (CategoryCode.isWithdrawalCategory(category.getValue())) {
-                initAccountsNotForAccounting(debitAccount);
-            }
-            else if (CategoryCode.isOutgoingCategory(category.getValue())) {
-                initAccountsForAccounting(debitAccount);
-            }
-            else if (CategoryCode.isTransferCategory(category.getValue())) {
-                updateAccountsComboBoxData(debitAccount, creditAccount);
-            }
-            else {
-                throw new InvalidCategoryCodeException();
-            }
-        });
         debitAccount.addValueChangeListener(event -> switchEnablerSaveButton());
     }
 
@@ -187,25 +173,43 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private void initCategoryBehaviour() {
         category = new ComboBox<>("Category");
         category.setItemLabelGenerator(Category::getName);
-        category.addValueChangeListener(event -> {
-            Category selectedCategory = event.getValue();
-            if (selectedCategory == null) return;
-            if (CategoryCode.isGoalsCategory(selectedCategory) ||
+        category.addValueChangeListener(this::initCategoryValueChangeListener);
+    }
+
+    private void initCategoryValueChangeListener(AbstractField.ComponentValueChangeEvent<ComboBox<Category>, Category> event) {
+        Category selectedCategory = event.getValue();
+        if (selectedCategory == null) return;
+        if (CategoryCode.isGoalsCategory(selectedCategory) ||
                 CategoryCode.isTransferCategory(selectedCategory)) {
-                debitAccount.setVisible(true);
-                creditAccount.setVisible(true);
-            } else if (CategoryCode.isIncomeCategory(selectedCategory)) {
-                debitAccount.setVisible(false);
-                creditAccount.setVisible(true);
-            } else if (CategoryCode.isOutgoingCategory(selectedCategory) ||
-                    CategoryCode.isWithdrawalCategory(selectedCategory)) {
-                debitAccount.setVisible(true);
-                creditAccount.setVisible(false);
-            } else {
-                throw new InvalidCategoryCodeException();
-            }
-            switchEnablerSaveButton();
-        });
+            debitAccount.setVisible(true);
+            creditAccount.setVisible(true);
+        } else if (CategoryCode.isIncomeCategory(selectedCategory)) {
+            debitAccount.setVisible(false);
+            creditAccount.setVisible(true);
+        } else if (CategoryCode.isOutgoingCategory(selectedCategory) ||
+                CategoryCode.isWithdrawalCategory(selectedCategory)) {
+            debitAccount.setVisible(true);
+            initDebitAccounts();
+            creditAccount.setVisible(false);
+        } else {
+            throw new InvalidCategoryCodeException();
+        }
+        switchEnablerSaveButton();
+    }
+
+    private void initDebitAccounts() {
+        if (CategoryCode.isWithdrawalCategory(category.getValue())) {
+            initAccountsNotForAccounting(debitAccount);
+        }
+        else if (CategoryCode.isOutgoingCategory(category.getValue())) {
+            initAccountsForAccounting(debitAccount);
+        }
+        else if (CategoryCode.isTransferCategory(category.getValue())) {
+            updateAccountsComboBoxData(debitAccount, creditAccount);
+        }
+        else {
+            throw new InvalidCategoryCodeException();
+        }
     }
 
     private void initButtonsBehaviourAndState() {
@@ -251,10 +255,14 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private void bindTransactionEventWithUiElements() {
         category.setValue(transactionEvent.getCategory());
         valueDatePicker.setValue(transactionEvent.getDate());
-        amount.setValue(transactionEvent.getAmount());
         comment.setValue(transactionEvent.getComment());
         this.debitAccount.setValue(transactionEvent.getDebitAccount());
         this.creditAccount.setValue(transactionEvent.getCreditAccount());
+        if (transactionEvent.getAmount().equals(BigDecimal.ZERO)) {
+            amount.setPlaceholder("0.00");
+        } else {
+            amount.setValue(transactionEvent.getAmount());
+        }
     }
 
     private void bindUiElementsWithTransactionEvent() {
