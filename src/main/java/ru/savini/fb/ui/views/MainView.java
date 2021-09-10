@@ -76,7 +76,8 @@ public class MainView extends AppLayout {
                 createTab("Accounts", AccountView.class),
                 createTab("Categories", CategoryView.class),
                 createTab("Transactions", TransactionView.class),
-                createTab("Accounting", AccountingUnitView.class)};
+                createTab("Accounting", AccountingUnitView.class),
+                createTab("Settings", AppSettingsView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
