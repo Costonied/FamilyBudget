@@ -42,6 +42,27 @@ public class AccountView extends VerticalLayout {
         HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
         add(actions, grid, editor);
 
+        filter.setPlaceholder("Filter by name");
+
+        // Hook logic to components
+
+        // Replace listing with filtered content when user changes filter
+        filter.setValueChangeMode(ValueChangeMode.EAGER);
+        filter.addValueChangeListener(e -> listAccounts(e.getValue()));
+
+        // Instantiate and edit new Account the new button is clicked
+        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, BigDecimal.ROUND_DOWN), "RUB")));
+
+        // Listen changes made by the editor, refresh data from backend
+        editor.setChangeHandler(() -> {
+            editor.setVisible(false);
+            listAccounts(filter.getValue());
+        });
+        initGrid();
+        listAccounts(null);
+    }
+
+    private void initGrid() {
         grid.setHeight("300px");
         grid.addColumn(Account::getName).setHeader("Name");
         grid.addColumn(new NumberRenderer<>(Account::getAmount, CurrencyHelper.format)).setHeader("Amount");
@@ -52,34 +73,11 @@ public class AccountView extends VerticalLayout {
             checkbox.setReadOnly(true);
             return checkbox;})
         ).setHeader("Need accounting");
-
-        filter.setPlaceholder("Filter by name");
-
-        // Hook logic to components
-
-        // Replace listing with filtered content when user changes filter
-        filter.setValueChangeMode(ValueChangeMode.EAGER);
-        filter.addValueChangeListener(e -> listAccounts(e.getValue()));
-
-        // Connect selected Account to editor or hide if none is selected
         grid.asSingleSelect().addValueChangeListener(e -> {
             editor.editAccount(e.getValue());
         });
-
-        // Instantiate and edit new Account the new button is clicked
-        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, BigDecimal.ROUND_DOWN), "RUB")));
-
-        // Listen changes made by the editor, refresh data from backend
-        editor.setChangeHandler(() -> {
-            editor.setVisible(false);
-            listAccounts(filter.getValue());
-        });
-
-        // Initialize listing
-        listAccounts(null);
     }
 
-    // tag::listCustomers[]
     void listAccounts(String filterText) {
         if (StringUtils.isEmpty(filterText)) {
             grid.setItems(accountController.getAll());
@@ -88,6 +86,5 @@ public class AccountView extends VerticalLayout {
             grid.setItems(accountController.getByNameStartsWithIgnoreCase(filterText));
         }
     }
-    // end::listCustomers[]
 
 }
