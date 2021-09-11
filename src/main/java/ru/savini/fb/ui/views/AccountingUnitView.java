@@ -1,5 +1,6 @@
 package ru.savini.fb.ui.views;
 
+import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.grid.Grid;
@@ -11,35 +12,26 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.ui.editors.AccountingUnitEditor;
 import ru.savini.fb.controller.AccountingUnitController;
+import ru.savini.fb.ui.helpers.CurrencyHelper;
 
 @PageTitle("Accounting")
 @Route(value = "accounting", layout = MainView.class)
 public class AccountingUnitView extends VerticalLayout {
 
-    private final AccountingUnitController accountingUnitController;
     private final AccountingUnitEditor editor;
     final Grid<AccountingUnit> grid;
     private final Button addNewBtn;
+    private final transient AccountingUnitController accountingUnitController;
 
     public AccountingUnitView(AccountingUnitController accountingUnitController, AccountingUnitEditor editor) {
         this.accountingUnitController = accountingUnitController;
         this.editor = editor;
-        this.grid = new Grid<>(AccountingUnit.class);
+        this.grid = new Grid<>(AccountingUnit.class, false);
         this.addNewBtn = new Button("New accounting unit", VaadinIcon.PLUS.create());
 
         // build layout
         HorizontalLayout actions = new HorizontalLayout(addNewBtn);
         add(actions, grid, editor);
-
-        grid.setHeight("300px");
-        grid.setColumns("id", "year", "month", "category.name", "planAmount", "factAmount");
-        grid.getColumnByKey("id").setWidth("50px").setFlexGrow(0);
-
-        // Hook logic to components
-
-        // Connect selected Transaction to editor or hide if none is selected
-        grid.asSingleSelect()
-                .addValueChangeListener(e -> editor.editAccountingUnit(e.getValue()));
 
         addNewBtn.addClickListener(e -> editor.editAccountingUnit(new AccountingUnit()));
 
@@ -49,8 +41,19 @@ public class AccountingUnitView extends VerticalLayout {
             listAccountingUnits();
         });
 
-        // Initialize listing
+        initGrid();
         listAccountingUnits();
+    }
+
+    private void initGrid() {
+        grid.setHeight("300px");
+        grid.addColumn(AccountingUnit::getYear).setHeader("Year");
+        grid.addColumn(AccountingUnit::getMonth).setHeader("Month");
+        grid.addColumn(accountingUnit -> accountingUnit.getCategory().getName()).setHeader("Category");
+        grid.addColumn(new NumberRenderer<>(AccountingUnit::getPlanAmount, CurrencyHelper.format)).setHeader("Plant amount");
+        grid.addColumn(new NumberRenderer<>(AccountingUnit::getFactAmount, CurrencyHelper.format)).setHeader("Fact amount");
+        grid.asSingleSelect()
+                .addValueChangeListener(e -> editor.editAccountingUnit(e.getValue()));
     }
 
     void listAccountingUnits() {
