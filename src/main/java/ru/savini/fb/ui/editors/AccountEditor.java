@@ -20,7 +20,7 @@ import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
 
-import java.util.Locale;
+import java.math.BigDecimal;
 
 /**
  * A simple example to introduce building forms. As your real application is probably much
@@ -34,12 +34,12 @@ import java.util.Locale;
 @UIScope
 public class AccountEditor extends VerticalLayout implements KeyNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountEditor.class);
-    private final AccountController accountController;
+    private final transient AccountController accountController;
 
     /**
      * The currently edited customer
      */
-    private Account account;
+    private transient Account account;
 
     /* Fields to edit properties in Account entity */
     TextField name = new TextField("Account name");
@@ -55,13 +55,12 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
 
     Binder<Account> binder = new Binder<>(Account.class);
 
-    private ChangeHandler changeHandler;
+    private transient ChangeHandler changeHandler;
 
     @Autowired
     public AccountEditor(AccountController accountController) {
         this.accountController = accountController;
         initBinder();
-        amount.setLocale(new Locale("ru-RU"));
         amount.setPlaceholder("0.00");
 
         add(name, amount, currency, needAccounting, actions);
@@ -71,11 +70,11 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         save.getElement().getThemeList().add("primary");
         delete.getElement().getThemeList().add("error");
 
-        addKeyPressListener(Key.ENTER, e -> save());
+        addKeyPressListener(Key.ENTER, e -> saveAccount());
 
         // wire action buttons to save, delete and reset
-        save.addClickListener(e -> save());
-        delete.addClickListener(e -> delete());
+        save.addClickListener(e -> saveAccount());
+        delete.addClickListener(e -> deleteAccount());
         cancel.addClickListener(e -> this.cancelEditing());
         setVisible(false);
     }
@@ -96,12 +95,15 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         currency.setItems(CurrencyHelper.getCurrencyCode());
     }
 
-    void delete() {
+    void deleteAccount() {
         accountController.delete(account);
         changeHandler.onChange();
     }
 
-    void save() {
+    void saveAccount() {
+        if (account.getAmount() == null) {
+            account.setAmount(BigDecimal.ZERO);
+        }
         accountController.save(account);
         changeHandler.onChange();
     }

@@ -20,12 +20,13 @@ import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Route(value = "accounts", layout = MainView.class)
 @PageTitle("Accounts")
 public class AccountView extends VerticalLayout {
 
-    private final AccountController accountController;
+    private final transient AccountController accountController;
     private final AccountEditor editor;
     final Grid<Account> grid;
     final TextField filter;
@@ -51,7 +52,7 @@ public class AccountView extends VerticalLayout {
         filter.addValueChangeListener(e -> listAccounts(e.getValue()));
 
         // Instantiate and edit new Account the new button is clicked
-        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, BigDecimal.ROUND_DOWN), "RUB")));
+        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, RoundingMode.DOWN), "RUB")));
 
         // Listen changes made by the editor, refresh data from backend
         editor.setChangeHandler(() -> {
@@ -64,6 +65,8 @@ public class AccountView extends VerticalLayout {
 
     private void initGrid() {
         grid.setHeight("300px");
+        // Don't delete ID column because it's need for user to set up "default.account.id.for.outgoing" settings
+        grid.addColumn(Account::getId).setHeader("ID");
         grid.addColumn(Account::getName).setHeader("Name");
         grid.addColumn(new NumberRenderer<>(Account::getAmount, CurrencyHelper.format)).setHeader("Amount");
         grid.addColumn(Account::getCurrency).setHeader("Currency");
@@ -73,9 +76,7 @@ public class AccountView extends VerticalLayout {
             checkbox.setReadOnly(true);
             return checkbox;})
         ).setHeader("Need accounting");
-        grid.asSingleSelect().addValueChangeListener(e -> {
-            editor.editAccount(e.getValue());
-        });
+        grid.asSingleSelect().addValueChangeListener(e -> editor.editAccount(e.getValue()));
     }
 
     void listAccounts(String filterText) {

@@ -3,6 +3,7 @@ package ru.savini.fb.ui.editors;
 import java.util.List;
 import java.time.LocalDate;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.textfield.BigDecimalField;
@@ -19,6 +20,7 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import ru.savini.fb.settings.Settings;
 import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.TransactionEvent;
@@ -35,6 +37,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private final transient AccountController accountController;
     private final transient CategoryController categoryController;
     private final transient TransactionController transactionController;
+    private final transient Settings settings;
 
     BigDecimalField amount = new BigDecimalField("Amount");
     TextField comment = new TextField("Comment");
@@ -54,9 +57,11 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private transient ChangeHandler changeHandler;
 
     @Autowired
-    public TransactionEditor(AccountController accountController,
+    public TransactionEditor(Settings settings,
+                             AccountController accountController,
                              CategoryController categoryController,
                              TransactionController transactionController) {
+        this.settings = settings;
         this.accountController = accountController;
         this.categoryController = categoryController;
         this.transactionController = transactionController;
@@ -200,6 +205,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         }
         else if (CategoryCode.isOutgoingCategory(category.getValue())) {
             initAccountsForAccounting(debitAccount);
+            debitAccount.setValue(getDefaultAccountForOutgoing());
         }
         else if (CategoryCode.isTransferCategory(category.getValue())) {
             updateAccountsComboBoxData(debitAccount, creditAccount);
@@ -290,6 +296,18 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
                     !amount.getValue().equals(new BigDecimal(0));
         } catch (NullPointerException e) {
             return false;
+        }
+    }
+
+    private Account getDefaultAccountForOutgoing() {
+        Long defaultAccountId = settings.getDefaultIncomingAccountId();
+        if (defaultAccountId != null) {
+            List<Account> accounts = accountController.getAllByNeedAccountingIsTrue();
+            Optional<Account> result = accounts.stream().filter(account -> account.getId().equals(defaultAccountId)).findFirst();
+            return result.orElse(null);
+        }
+        else {
+            return null;
         }
     }
 }

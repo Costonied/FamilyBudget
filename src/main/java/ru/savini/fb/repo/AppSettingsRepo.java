@@ -7,5 +7,5 @@ import ru.savini.fb.domain.entity.settings.AppSettings;
 
 public interface AppSettingsRepo extends JpaRepository<AppSettings, Long> {
     List<AppSettings> findByKeyStartsWithIgnoreCase(String key);
-
+    AppSettings findByKey(String key);
 }
