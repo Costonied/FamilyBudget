@@ -36,4 +36,15 @@ public class AppSettingsControllerImpl implements AppSettingsController {
     public List<AppSettings> getByKeyStartsWithIgnoreCase(String key) {
         return repo.findByKeyStartsWithIgnoreCase(key);
     }
+
+    @Override
+    public String getValue(String key) {
+        AppSettings appSettings = repo.findByKey(key);
+        if (appSettings != null) {
+            return appSettings.getValue();
+        }
+        else {
+            return null;
+        }
+    }
 }
