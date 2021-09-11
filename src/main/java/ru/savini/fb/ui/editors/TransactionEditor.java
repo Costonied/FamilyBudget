@@ -1,14 +1,11 @@
 package ru.savini.fb.ui.editors;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.ArrayList;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.textfield.BigDecimalField;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.button.Button;
@@ -34,15 +31,11 @@ import ru.savini.fb.exceptions.InvalidCategoryCodeException;
 @UIScope
 @SpringComponent
 public class TransactionEditor extends VerticalLayout implements KeyNotifier {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TransactionEditor.class);
+    private transient TransactionEvent transactionEvent;
+    private final transient AccountController accountController;
+    private final transient CategoryController categoryController;
+    private final transient TransactionController transactionController;
 
-    private TransactionEvent transactionEvent;
-    private final AccountController accountController;
-    private final CategoryController categoryController;
-    private final TransactionController transactionController;
-    private List<Account> accounts = new ArrayList<>();
-
-    /* UI elements */
     BigDecimalField amount = new BigDecimalField("Amount");
     TextField comment = new TextField("Comment");
     DatePicker valueDatePicker = new DatePicker("Transaction date");
@@ -58,7 +51,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
     HorizontalLayout actions = new HorizontalLayout(save, cancel, saveAndNew, delete);
 
-    private ChangeHandler changeHandler;
+    private transient ChangeHandler changeHandler;
 
     @Autowired
     public TransactionEditor(AccountController accountController,
@@ -78,25 +71,25 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
 
         setSpacing(true);
         add(category, valueDatePicker, amount, debitAccount, creditAccount, comment, actions);
-        addKeyPressListener(Key.ENTER, e -> save(false));
+        addKeyPressListener(Key.ENTER, e -> saveTransaction(false));
 
         valueDatePicker.setValue(LocalDate.now());
 
         setVisible(false);
     }
 
-    void save(boolean isNeededNewTransaction) {
+    void saveTransaction(boolean isNeededNewTransaction) {
         bindUiElementsWithTransactionEvent();
         transactionController.save(transactionEvent);
         changeHandler.onChange(isNeededNewTransaction);
     }
 
-    void delete() {
+    void deleteTransaction() {
         transactionController.delete(transactionEvent);
         changeHandler.onChange(false);
     }
 
-    void cancel() {
+    void cancelAction() {
         setVisible(false);
     }
 
@@ -135,7 +128,12 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void clearTransactionEvent() {
-        this.transactionEvent = new TransactionEvent();
+        if (transactionEvent != null) {
+            transactionEvent = new TransactionEvent(transactionEvent.getDate());
+        }
+        else {
+            transactionEvent = new TransactionEvent();
+        }
     }
 
     public interface ChangeHandler {
@@ -149,9 +147,8 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     }
 
     private void refreshComboBoxData() {
-        accounts = accountController.getAllByNeedAccountingIsTrue();
-        debitAccount.setItems(accounts);
-        creditAccount.setItems(accounts);
+        debitAccount.setItems(accountController.getAllByNeedAccountingIsTrue());
+        creditAccount.setItems(accountController.getAllByNeedAccountingIsTrue());
         category.setItems(categoryController.getAll());
     }
 
@@ -216,20 +213,20 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         initSaveButtonBehaviourAndState();
         initSaveAndNewButtonBehaviourAndState();
         delete.getElement().getThemeList().add("error");
-        cancel.addClickListener(e -> cancel());
-        delete.addClickListener(e -> delete());
+        cancel.addClickListener(e -> cancelAction());
+        delete.addClickListener(e -> deleteTransaction());
     }
 
     private void initSaveButtonBehaviourAndState() {
         save.setEnabled(false);
         save.getElement().getThemeList().add("primary");
-        save.addClickListener(e -> save(false));
+        save.addClickListener(e -> saveTransaction(false));
     }
 
     private void initSaveAndNewButtonBehaviourAndState() {
         saveAndNew.setEnabled(false);
         saveAndNew.getElement().getThemeList().add("primary");
-        saveAndNew.addClickListener(e -> save(true));
+        saveAndNew.addClickListener(e -> saveTransaction(true));
     }
 
     private void initAmountBehaviour() {
@@ -259,6 +256,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         this.debitAccount.setValue(transactionEvent.getDebitAccount());
         this.creditAccount.setValue(transactionEvent.getCreditAccount());
         if (transactionEvent.getAmount().equals(BigDecimal.ZERO)) {
+            amount.setValue(null);
             amount.setPlaceholder("0.00");
         } else {
             amount.setValue(transactionEvent.getAmount());

@@ -27,6 +27,11 @@ public class TransactionEvent {
         this.amount = BigDecimal.ZERO;
     }
 
+    public TransactionEvent(LocalDate date) {
+        this();
+        this.date = date;
+    }
+
     public TransactionEvent(Transaction transaction) {
         this.id = transaction.getId();
         this.comment = transaction.getComment();
