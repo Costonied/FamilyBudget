@@ -25,6 +25,7 @@ Set up it on the _Settings_ view in UI
 
 | Key                             | Description                                          |
 | ------------------------------- | ---------------------------------------------------- |
+| app.locale                      | Application locale                                   |
 | default.account.id.for.outgoing | Default account ID for outgoing (spend) transactions |
 
 # Heroku
