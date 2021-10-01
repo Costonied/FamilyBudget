@@ -1,16 +1,19 @@
 package ru.savini.fb.settings;
 
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.savini.fb.controller.AppSettingsController;
 
+
 @Service
 public class Settings {
     private static final Logger LOGGER = LoggerFactory.getLogger(Settings.class);
     private final AppSettingsController controller;
 
+    private static final String APPLICATION_LOCALE = "app.locale";
     private static final String DEFAULT_ACCOUNT_ID_FOR_OUTGOING = "default.account.id.for.outgoing";
 
     @Autowired
@@ -28,4 +31,8 @@ public class Settings {
         }
     }
 
+    public Locale getLocale() {
+        String locale = controller.getValue(APPLICATION_LOCALE);
+        return locale != null ? new Locale(locale) : Locale.getDefault();
+    }
 }

@@ -79,6 +79,7 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
         addKeyPressListener(Key.ENTER, e -> saveTransaction(false));
 
         valueDatePicker.setValue(LocalDate.now());
+        amount.setLocale(settings.getLocale());
 
         setVisible(false);
     }
