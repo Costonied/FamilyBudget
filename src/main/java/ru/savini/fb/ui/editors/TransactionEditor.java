@@ -182,19 +182,24 @@ public class TransactionEditor extends VerticalLayout implements KeyNotifier {
     private void initCategoryValueChangeListener(AbstractField.ComponentValueChangeEvent<ComboBox<Category>, Category> event) {
         Category selectedCategory = event.getValue();
         if (selectedCategory == null) return;
+
         if (CategoryCode.isGoalsCategory(selectedCategory) ||
                 CategoryCode.isTransferCategory(selectedCategory)) {
+            debitAccount.setItems(accountController.getAll());
             debitAccount.setVisible(true);
             creditAccount.setVisible(true);
-        } else if (CategoryCode.isIncomeCategory(selectedCategory)) {
+        }
+        else if (CategoryCode.isIncomeCategory(selectedCategory)) {
             debitAccount.setVisible(false);
             creditAccount.setVisible(true);
-        } else if (CategoryCode.isOutgoingCategory(selectedCategory) ||
+        }
+        else if (CategoryCode.isOutgoingCategory(selectedCategory) ||
                 CategoryCode.isWithdrawalCategory(selectedCategory)) {
             debitAccount.setVisible(true);
             initDebitAccounts();
             creditAccount.setVisible(false);
-        } else {
+        }
+        else {
             throw new InvalidCategoryCodeException();
         }
         switchEnablerSaveButton();
