@@ -28,13 +28,12 @@ public class AccountView extends VerticalLayout {
 
     private final transient AccountController accountController;
     private final AccountEditor editor;
-    final Grid<Account> grid;
-    final TextField filter;
+    private final Grid<Account> grid;
+    private final TextField filter = new TextField();
     private final Button addNewBtn;
 
     public AccountView(AccountController accountController, AccountEditor editor) {
         this.editor = editor;
-        this.filter = new TextField();
         this.grid = new Grid<>(Account.class, false);
         this.accountController = accountController;
         this.addNewBtn = new Button("New account", VaadinIcon.PLUS.create());
@@ -42,14 +41,6 @@ public class AccountView extends VerticalLayout {
         // build layout
         HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
         add(actions, grid, editor);
-
-        filter.setPlaceholder("Filter by name");
-
-        // Hook logic to components
-
-        // Replace listing with filtered content when user changes filter
-        filter.setValueChangeMode(ValueChangeMode.EAGER);
-        filter.addValueChangeListener(e -> listAccounts(e.getValue()));
 
         // Instantiate and edit new Account the new button is clicked
         addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, RoundingMode.DOWN), "RUB")));
@@ -59,8 +50,16 @@ public class AccountView extends VerticalLayout {
             editor.setVisible(false);
             listAccounts(filter.getValue());
         });
+        initFilter();
         initGrid();
         listAccounts(null);
+    }
+
+    private void initFilter() {
+        filter.setClearButtonVisible(true);
+        filter.setPlaceholder("Filter by name");
+        filter.setValueChangeMode(ValueChangeMode.EAGER);
+        filter.addValueChangeListener(e -> listAccounts(e.getValue()));
     }
 
     private void initGrid() {
@@ -84,7 +83,7 @@ public class AccountView extends VerticalLayout {
             grid.setItems(accountController.getAll());
         }
         else {
-            grid.setItems(accountController.getByNameStartsWithIgnoreCase(filterText));
+            grid.setItems(accountController.getByNameContainsIgnoreCase(filterText));
         }
     }
 

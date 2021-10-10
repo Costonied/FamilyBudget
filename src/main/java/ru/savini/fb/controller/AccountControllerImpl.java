@@ -41,7 +41,6 @@ public class AccountControllerImpl implements AccountController {
         this.save(account);
     }
 
-    // TODO: refactoring needed - delete duplicate of code
     @Override
     public void withdrawMoney(BigDecimal transactionAmount, Account account) {
         Money currentAccountMoney = account.getMoney();
@@ -58,8 +57,8 @@ public class AccountControllerImpl implements AccountController {
     }
 
     @Override
-    public List<Account> getByNameStartsWithIgnoreCase(String name) {
-        return repository.findByNameStartsWithIgnoreCase(name);
+    public List<Account> getByNameContainsIgnoreCase(String name) {
+        return repository.findByNameContainsIgnoreCase(name);
     }
 
     @Override

@@ -13,7 +13,7 @@ public interface AccountController {
 
     Account getById(long accountId);
     List<Account> getAll();
-    List<Account> getByNameStartsWithIgnoreCase(String name);
+    List<Account> getByNameContainsIgnoreCase(String name);
     List<Account> getAllByNeedAccountingIsTrue();
     List<Account> getAllByNeedAccountingIsFalse();
 }

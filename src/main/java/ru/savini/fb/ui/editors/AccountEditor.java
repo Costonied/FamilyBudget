@@ -47,7 +47,6 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     ComboBox<String> currency;
     Checkbox needAccounting = new Checkbox("Need accounting");
 
-    /* Action buttons */
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
     Button delete = new Button("Delete", VaadinIcon.TRASH.create());
@@ -130,7 +129,6 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         else {
             this.account = account;
         }
-        cancel.setVisible(persisted);
 
         // Bind account properties to similarly named fields
         // Could also use annotation or "manual binding" or programmatically
