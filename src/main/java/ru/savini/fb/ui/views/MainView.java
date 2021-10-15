@@ -77,7 +77,8 @@ public class MainView extends AppLayout {
                 createTab("Categories", CategoryView.class),
                 createTab("Transactions", TransactionView.class),
                 createTab("Accounting", AccountingUnitView.class),
-                createTab("Settings", AppSettingsView.class)};
+                createTab("Settings", AppSettingsView.class),
+                createTab("ApexCharts", ApexChartsView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
