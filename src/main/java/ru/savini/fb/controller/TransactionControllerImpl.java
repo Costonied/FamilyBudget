@@ -1,5 +1,6 @@
 package ru.savini.fb.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Category;
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.domain.entity.TransactionEvent;
+import ru.savini.fb.repo.filters.TransactionFilter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -112,6 +114,15 @@ public class TransactionControllerImpl implements TransactionController {
     @Override
     public List<Transaction> getAllByOrderByDateDesc() {
         return transactionRepo.getAllByOrderByDateDesc();
+    }
+
+    @Override
+    public List<Transaction> getFiltered(TransactionFilter filter) {
+        if (StringUtils.isNotEmpty(filter.getAccountName())) {
+            return transactionRepo.findAllByAccount_NameContainsIgnoreCaseOrderByDateDesc(filter.getAccountName());
+        } else {
+            return getAllByOrderByDateDesc();
+        }
     }
 
     private void changeAccountAmount(Transaction transaction) {
