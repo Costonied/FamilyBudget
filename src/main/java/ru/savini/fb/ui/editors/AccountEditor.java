@@ -50,7 +50,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
     Button save = new Button("Save", VaadinIcon.CHECK.create());
     Button cancel = new Button("Cancel");
     Button delete = new Button("Delete", VaadinIcon.TRASH.create());
-    HorizontalLayout actions = new HorizontalLayout(save, cancel, delete);
+    HorizontalLayout actions = new HorizontalLayout(save, cancel);
 
     Binder<Account> binder = new Binder<>(Account.class);
 
@@ -62,7 +62,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         initBinder();
         amount.setPlaceholder("0.00");
 
-        add(name, amount, currency, needAccounting, actions);
+        add(name, amount, currency, needAccounting, actions, delete);
         // Configure and style components
         setSpacing(true);
 
@@ -75,7 +75,12 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         save.addClickListener(e -> saveAccount());
         delete.addClickListener(e -> deleteAccount());
         cancel.addClickListener(e -> this.cancelEditing());
+        initDeleteButton();
         setVisible(false);
+    }
+
+    private void initDeleteButton() {
+        delete.setWidthFull();
     }
 
     private void initBinder() {
@@ -109,7 +114,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
 
     void cancelEditing() {
         this.account = null;
-        super.setVisible(false);
+        changeHandler.onChange();
     }
 
     public interface ChangeHandler {
@@ -138,6 +143,7 @@ public class AccountEditor extends VerticalLayout implements KeyNotifier {
         currency.setValue(account.getCurrency());
 
         setVisible(true);
+        delete.setVisible(account.getId() != null);
 
         // Focus name initially
         name.focus();

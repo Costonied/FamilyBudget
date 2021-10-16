@@ -2,7 +2,10 @@ package ru.savini.fb.ui.views;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -21,6 +24,8 @@ import ru.savini.fb.ui.helpers.CurrencyHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
 @Route(value = "accounts", layout = MainView.class)
 @PageTitle("Accounts")
@@ -31,6 +36,7 @@ public class AccountView extends VerticalLayout {
     private final Grid<Account> grid;
     private final TextField filter = new TextField();
     private final Button addNewBtn;
+    private final Dialog dialog = new Dialog();
 
     public AccountView(AccountController accountController, AccountEditor editor) {
         this.editor = editor;
@@ -40,19 +46,21 @@ public class AccountView extends VerticalLayout {
 
         // build layout
         HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
-        add(actions, grid, editor);
+        add(actions, grid);
 
-        // Instantiate and edit new Account the new button is clicked
-        addNewBtn.addClickListener(e -> editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, RoundingMode.DOWN), "RUB")));
-
-        // Listen changes made by the editor, refresh data from backend
-        editor.setChangeHandler(() -> {
-            editor.setVisible(false);
-            listAccounts(filter.getValue());
-        });
+        initEditor();
+        initDialog();
         initFilter();
         initGrid();
         listAccounts(null);
+    }
+
+    private void initEditor() {
+        // Listen changes made by the editor, refresh data from backend
+        editor.setChangeHandler(() -> {
+            listAccounts(filter.getValue());
+            dialog.close();
+        });
     }
 
     private void initFilter() {
@@ -62,8 +70,15 @@ public class AccountView extends VerticalLayout {
         filter.addValueChangeListener(e -> listAccounts(e.getValue()));
     }
 
+    private void initDialog() {
+        dialog.add(editor);
+        addNewBtn.addClickListener(event -> {
+            dialog.open();
+            editor.editAccount(new Account("", BigDecimal.valueOf(0).setScale(2, RoundingMode.DOWN), "RUB"));
+        });
+    }
+
     private void initGrid() {
-        grid.setHeight("300px");
         // Don't delete ID column because it's need for user to set up "default.account.id.for.outgoing" settings
         grid.addColumn(Account::getId).setHeader("ID");
         grid.addColumn(Account::getName).setHeader("Name");
@@ -75,7 +90,22 @@ public class AccountView extends VerticalLayout {
             checkbox.setReadOnly(true);
             return checkbox;})
         ).setHeader("Need accounting");
-        grid.asSingleSelect().addValueChangeListener(e -> editor.editAccount(e.getValue()));
+        grid.setHeightByRows(true);
+        grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS,GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
+        grid.addComponentColumn(this::createEditIcon).setKey("editorButton");
+    }
+
+    private Icon createEditIcon(Account account) {
+        Icon icon = VaadinIcon.ELLIPSIS_CIRCLE_O.create();
+        icon.getStyle().set("cursor", "pointer");
+        icon.addClickListener(event -> {
+            dialog.open();
+            editor.editAccount(account);
+        });
+        icon.setColor("#1b6cf7");
+        icon.setVisible(false);
+        grid.addSelectionListener(event -> icon.setVisible(event.getAllSelectedItems().contains(account)));
+        return icon;
     }
 
     void listAccounts(String filterText) {
