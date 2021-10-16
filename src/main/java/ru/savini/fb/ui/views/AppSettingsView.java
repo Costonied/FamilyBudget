@@ -12,6 +12,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 import org.springframework.util.StringUtils;
 
+import ru.savini.fb.ui.components.FBGrid;
 import ru.savini.fb.ui.editors.AppSettingsEditor;
 import ru.savini.fb.controller.AppSettingsController;
 import ru.savini.fb.domain.entity.settings.AppSettings;
@@ -21,7 +22,7 @@ import ru.savini.fb.domain.entity.settings.AppSettings;
 @PageTitle("Settings")
 public class AppSettingsView extends VerticalLayout {
 
-    final Grid<AppSettings> grid;
+    final FBGrid<AppSettings> grid;
     final TextField filter;
     private final Button addNewBtn;
     private final AppSettingsEditor editor;
@@ -30,7 +31,7 @@ public class AppSettingsView extends VerticalLayout {
     public AppSettingsView(AppSettingsController categoryController, AppSettingsEditor editor) {
         this.editor = editor;
         this.controller = categoryController;
-        this.grid = new Grid<>(AppSettings.class);
+        this.grid = new FBGrid<>(AppSettings.class);
         this.filter = new TextField();
         this.addNewBtn = new Button("New settings", VaadinIcon.PLUS.create());
 

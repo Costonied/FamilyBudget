@@ -13,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import org.springframework.util.StringUtils;
 
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.ui.components.FBGrid;
 import ru.savini.fb.ui.editors.CategoryEditor;
 import ru.savini.fb.controller.CategoryController;
 
@@ -20,7 +21,7 @@ import ru.savini.fb.controller.CategoryController;
 @PageTitle("Categories")
 public class CategoryView extends VerticalLayout {
 
-    final Grid<Category> grid;
+    final FBGrid<Category> grid;
     final TextField filter;
     private final Button addNewBtn;
     private final CategoryEditor editor;
@@ -29,7 +30,7 @@ public class CategoryView extends VerticalLayout {
     public CategoryView(CategoryController categoryController, CategoryEditor editor) {
         this.editor = editor;
         this.filter = new TextField();
-        this.grid = new Grid<>(Category.class);
+        this.grid = new FBGrid<>(Category.class);
         this.categoryController = categoryController;
         this.addNewBtn = new Button("New category", VaadinIcon.PLUS.create());
 
