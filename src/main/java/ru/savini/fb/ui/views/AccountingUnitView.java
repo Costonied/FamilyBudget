@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import ru.savini.fb.domain.entity.AccountingUnit;
+import ru.savini.fb.ui.components.FBGrid;
 import ru.savini.fb.ui.editors.AccountingUnitEditor;
 import ru.savini.fb.controller.AccountingUnitController;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
@@ -19,14 +20,14 @@ import ru.savini.fb.ui.helpers.CurrencyHelper;
 public class AccountingUnitView extends VerticalLayout {
 
     private final AccountingUnitEditor editor;
-    final Grid<AccountingUnit> grid;
+    final FBGrid<AccountingUnit> grid;
     private final Button addNewBtn;
     private final transient AccountingUnitController accountingUnitController;
 
     public AccountingUnitView(AccountingUnitController accountingUnitController, AccountingUnitEditor editor) {
         this.accountingUnitController = accountingUnitController;
         this.editor = editor;
-        this.grid = new Grid<>(AccountingUnit.class, false);
+        this.grid = new FBGrid<>(AccountingUnit.class);
         this.addNewBtn = new Button("New accounting unit", VaadinIcon.PLUS.create());
 
         // build layout

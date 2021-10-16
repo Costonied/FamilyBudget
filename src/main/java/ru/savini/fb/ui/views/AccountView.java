@@ -18,6 +18,7 @@ import com.vaadin.flow.router.Route;
 import org.springframework.util.StringUtils;
 
 import ru.savini.fb.domain.entity.Account;
+import ru.savini.fb.ui.components.FBGrid;
 import ru.savini.fb.ui.editors.AccountEditor;
 import ru.savini.fb.controller.AccountController;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
@@ -33,14 +34,14 @@ public class AccountView extends VerticalLayout {
 
     private final transient AccountController accountController;
     private final AccountEditor editor;
-    private final Grid<Account> grid;
+    private final FBGrid<Account> grid;
     private final TextField filter = new TextField();
     private final Button addNewBtn;
     private final Dialog dialog = new Dialog();
 
     public AccountView(AccountController accountController, AccountEditor editor) {
         this.editor = editor;
-        this.grid = new Grid<>(Account.class, false);
+        this.grid = new FBGrid<>(Account.class);
         this.accountController = accountController;
         this.addNewBtn = new Button("New account", VaadinIcon.PLUS.create());
 

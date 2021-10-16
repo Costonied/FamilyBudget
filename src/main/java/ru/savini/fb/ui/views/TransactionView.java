@@ -1,5 +1,6 @@
 package ru.savini.fb.ui.views;
 
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -13,6 +14,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import ru.savini.fb.domain.entity.Transaction;
 import ru.savini.fb.repo.filters.TransactionFilter;
+import ru.savini.fb.ui.components.FBGrid;
 import ru.savini.fb.ui.editors.TransactionEditor;
 import ru.savini.fb.controller.TransactionController;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
@@ -21,7 +23,7 @@ import ru.savini.fb.ui.helpers.CurrencyHelper;
 @PageTitle("Transactions")
 public class TransactionView extends VerticalLayout {
 
-    final Grid<Transaction> grid;
+    final FBGrid<Transaction> grid;
     private final Button addNewBtn;
     private final TransactionEditor editor;
     private final transient TransactionController transactionController;
@@ -32,7 +34,7 @@ public class TransactionView extends VerticalLayout {
                            TransactionController transactionController) {
         this.editor = editor;
         this.transactionController = transactionController;
-        this.grid = new Grid<>(Transaction.class, false);
+        this.grid = new FBGrid<>(Transaction.class);
         this.addNewBtn = new Button("New transaction", VaadinIcon.PLUS.create());
 
         // build layout
@@ -76,6 +78,7 @@ public class TransactionView extends VerticalLayout {
         setGridColumns();
         grid.asSingleSelect()
                 .addValueChangeListener(e -> editor.editTransaction(transactionController.getEventFromTransaction(e.getValue())));
+        grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS,GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
     }
 
     private void setGridColumns() {
