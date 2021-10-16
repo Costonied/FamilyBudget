@@ -78,7 +78,6 @@ public class TransactionView extends VerticalLayout {
         setGridColumns();
         grid.asSingleSelect()
                 .addValueChangeListener(e -> editor.editTransaction(transactionController.getEventFromTransaction(e.getValue())));
-        grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS,GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
     }
 
     private void setGridColumns() {

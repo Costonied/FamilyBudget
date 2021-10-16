@@ -7,6 +7,7 @@ public class FBGrid<T> extends Grid<T> {
 
     public FBGrid(Class<T> beanType) {
         super(beanType, false);
+        this.setHeightByRows(true);
         this.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS, GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
     }
 }

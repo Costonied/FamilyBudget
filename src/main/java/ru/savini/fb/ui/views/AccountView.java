@@ -3,8 +3,6 @@ package ru.savini.fb.ui.views;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -25,8 +23,6 @@ import ru.savini.fb.ui.helpers.CurrencyHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 
 @Route(value = "accounts", layout = MainView.class)
 @PageTitle("Accounts")
@@ -91,8 +87,6 @@ public class AccountView extends VerticalLayout {
             checkbox.setReadOnly(true);
             return checkbox;})
         ).setHeader("Need accounting");
-        grid.setHeightByRows(true);
-        grid.addThemeVariants(GridVariant.LUMO_NO_ROW_BORDERS,GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_ROW_STRIPES);
         grid.addComponentColumn(this::createEditIcon).setKey("editorButton");
     }
 
