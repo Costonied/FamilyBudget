@@ -1,6 +1,8 @@
 package ru.savini.fb.ui.views;
 
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.NumberRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.grid.Grid;
@@ -9,8 +11,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-import ru.savini.fb.domain.entity.Account;
 import ru.savini.fb.domain.entity.Transaction;
+import ru.savini.fb.repo.filters.TransactionFilter;
 import ru.savini.fb.ui.editors.TransactionEditor;
 import ru.savini.fb.controller.TransactionController;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
@@ -23,6 +25,8 @@ public class TransactionView extends VerticalLayout {
     private final Button addNewBtn;
     private final TransactionEditor editor;
     private final transient TransactionController transactionController;
+    private final TextField filter = new TextField();
+    private final TransactionFilter transactionFilter = new TransactionFilter();
 
     public TransactionView(TransactionEditor editor,
                            TransactionController transactionController) {
@@ -32,7 +36,7 @@ public class TransactionView extends VerticalLayout {
         this.addNewBtn = new Button("New transaction", VaadinIcon.PLUS.create());
 
         // build layout
-        HorizontalLayout actions = new HorizontalLayout(addNewBtn);
+        HorizontalLayout actions = new HorizontalLayout(filter, addNewBtn);
         add(actions, grid, editor);
 
         // Instantiate and edit new Category the new button is clicked
@@ -48,12 +52,23 @@ public class TransactionView extends VerticalLayout {
             setListOfTransactions();
         });
 
+        initFilter();
         initGrid();
         setListOfTransactions();
     }
 
+    private void initFilter() {
+        filter.setClearButtonVisible(true);
+        filter.setPlaceholder("Filter by account");
+        filter.setValueChangeMode(ValueChangeMode.EAGER);
+        filter.addValueChangeListener(e -> {
+            transactionFilter.setAccountName(e.getValue());
+            setListOfTransactions();
+        });
+    }
+
     void setListOfTransactions() {
-        grid.setItems(transactionController.getAllByOrderByDateDesc());
+        grid.setItems(transactionController.getFiltered(transactionFilter));
     }
 
     private void initGrid() {
