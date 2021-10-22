@@ -85,7 +85,7 @@ public class TransactionEditorDialog extends FBEditorDialog {
     private void refreshComboBoxData() {
         category.setItems(categoryController.getAll());
         debitAccount.setItems(accountController.getAllByNeedAccountingIsTrue());
-        creditAccount.setItems(accountController.getAllByNeedAccountingIsTrue());
+        creditAccount.setItems(accountController.getAll());
     }
 
     private void setFields() {
@@ -316,6 +316,9 @@ public class TransactionEditorDialog extends FBEditorDialog {
     }
 
     private void updateAccountsComboBoxData(ComboBox<Account> selectedAccount, ComboBox<Account> anotherAccount) {
+        if (!anotherAccount.isVisible() || anotherAccount.getValue() == null) {
+            return;
+        }
         List<Account> correctedAccounts = accountController.getAll();
         correctedAccounts.remove(anotherAccount.getValue());
         correctedAccounts.removeIf(account -> account.getId().equals(anotherAccount.getValue().getId()));
