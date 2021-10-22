@@ -183,6 +183,7 @@ public class TransactionEditorDialog extends FBEditorDialog {
         saveAndNew.setEnabled(false);
         saveAndNew.getElement().getThemeList().add("primary");
         saveAndNew.addClickListener(e -> {
+            saveAndNew.setEnabled(false);
             lastDate = date.getValue();
             saveTransaction(true);
         });
@@ -190,6 +191,7 @@ public class TransactionEditorDialog extends FBEditorDialog {
 
     private void initSave() {
         save.addClickListener(event -> {
+            save.setEnabled(false);
             lastDate = null;
             saveTransaction(false);
         });
