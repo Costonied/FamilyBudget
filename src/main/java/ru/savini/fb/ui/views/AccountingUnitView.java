@@ -3,7 +3,6 @@ package ru.savini.fb.ui.views;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -29,7 +28,6 @@ public class AccountingUnitView extends VerticalLayout {
         this.editor = editor;
         this.grid = new FBGrid<>(AccountingUnit.class);
         this.addNewBtn = new Button("New accounting unit", VaadinIcon.PLUS.create());
-
         // build layout
         HorizontalLayout actions = new HorizontalLayout(addNewBtn);
         add(actions, grid, editor);
