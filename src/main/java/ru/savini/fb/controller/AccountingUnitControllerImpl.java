@@ -39,6 +39,11 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
     }
 
     @Override
+    public List<AccountingUnit> getAllByYearAndMonth(int year, int month) {
+        return accountingUnitRepo.findAllByYearAndMonth(year, month);
+    }
+
+    @Override
     public AccountingUnit getById(long accountingUnitId) {
         Optional<AccountingUnit> optionalAccountingUnit = accountingUnitRepo.findById(accountingUnitId);
         return optionalAccountingUnit.orElseThrow(NoSuchAccountingUnitIdException::new);

@@ -12,6 +12,7 @@ public interface AccountingUnitController {
     void delete(AccountingUnit accountingUnit);
 
     List<AccountingUnit> getAll();
+    List<AccountingUnit> getAllByYearAndMonth(int year, int month);
     AccountingUnit getById(long accountingUnitId);
     AccountingUnit getByCategoryAndLocalDate(Category category, LocalDate localDate);
 
