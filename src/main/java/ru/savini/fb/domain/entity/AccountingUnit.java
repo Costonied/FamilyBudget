@@ -5,9 +5,11 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.ManyToOne;
+import javax.persistence.GeneratedValue;
+import javax.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = { "year", "month", "category_id" }) })
 public class AccountingUnit {
     @Id
     @GeneratedValue(generator="ACCOUNT_UNIT_GENERATOR")

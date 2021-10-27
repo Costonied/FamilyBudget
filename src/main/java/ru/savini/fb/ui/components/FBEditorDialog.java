@@ -55,5 +55,4 @@ public abstract class FBEditorDialog extends Dialog {
         delete.getElement().getThemeList().add("error");
         delete.setWidthFull();
     }
-
 }
