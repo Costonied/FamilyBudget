@@ -1,5 +1,6 @@
 package ru.savini.fb.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
@@ -41,6 +42,14 @@ public class CategoryControllerImpl implements CategoryController {
     @Override
     public List<Category> getAll() {
         return categoryRepo.findAll();
+    }
+
+    @Override
+    public List<Category> getAllForAccounting() {
+        List<String> types = new ArrayList<>();
+        types.add(CategoryCode.INCOME.getCode());
+        types.add(CategoryCode.OUTGO.getCode());
+        return categoryRepo.findAllByTypeIn(types);
     }
 
     @Override

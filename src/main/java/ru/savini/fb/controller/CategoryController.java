@@ -10,6 +10,7 @@ public interface CategoryController {
 
     Category getById(int categoryId);
     List<Category> getAll();
+    List<Category> getAllForAccounting();
     List<Category> getByNameStartsWithIgnoreCase(String name);
 
     List<String> getCategoryCodes();
