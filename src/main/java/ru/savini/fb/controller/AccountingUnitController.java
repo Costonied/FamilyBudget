@@ -18,4 +18,6 @@ public interface AccountingUnitController {
 
     void increaseFactAmount(AccountingUnit accountingUnit, Money money);
     void decreaseFactAmount(AccountingUnit accountingUnit, Money money);
+
+    List<Category> getAllCategory();
 }

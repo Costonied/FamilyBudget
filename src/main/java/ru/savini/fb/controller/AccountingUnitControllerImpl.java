@@ -17,10 +17,13 @@ import ru.savini.fb.exceptions.NoSuchAccountingUnitIdException;
 @Component
 public class AccountingUnitControllerImpl implements AccountingUnitController {
     private final AccountingUnitRepo accountingUnitRepo;
+    private final CategoryController categoryController;
 
     @Autowired
-    public AccountingUnitControllerImpl(AccountingUnitRepo accountingUnitRepo) {
+    public AccountingUnitControllerImpl(AccountingUnitRepo accountingUnitRepo,
+                                        CategoryController categoryController) {
         this.accountingUnitRepo = accountingUnitRepo;
+        this.categoryController = categoryController;
     }
 
     @Override
@@ -75,6 +78,11 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
         Money newFactMoney = currentFactMoney.minus(money);
         accountingUnit.setFactAmount(newFactMoney.getAmount());
         save(accountingUnit);
+    }
+
+    @Override
+    public List<Category> getAllCategory() {
+        return categoryController.getAllForAccounting();
     }
 
     private Money getFactMoneyFromAccountingUnitAndMoney(AccountingUnit accountingUnit, Money transactionMoney) {

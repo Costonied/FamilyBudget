@@ -6,6 +6,7 @@ import ru.savini.fb.domain.entity.Category;
 import java.util.List;
 
 public interface CategoryRepo extends JpaRepository<Category, Integer> {
-    List<Category> findByNameStartsWithIgnoreCase(String name);
     int countByTypeEquals(String categoryType);
+    List<Category> findAllByTypeIn(List<String> types);
+    List<Category> findByNameStartsWithIgnoreCase(String name);
 }
