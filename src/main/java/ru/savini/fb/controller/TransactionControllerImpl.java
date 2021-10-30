@@ -14,6 +14,7 @@ import ru.savini.fb.domain.entity.TransactionPair;
 import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.enums.TransactionType;
 import ru.savini.fb.exceptions.InvalidCategoryCodeException;
+import ru.savini.fb.exceptions.NoSuchTransactionIdException;
 import ru.savini.fb.repo.TransactionRepo;
 import ru.savini.fb.repo.TransactionPairRepo;
 import ru.savini.fb.domain.entity.Account;
@@ -77,7 +78,8 @@ public class TransactionControllerImpl implements TransactionController {
     private void processAndSaveTransaction(Transaction transaction) {
         // check does it transaction edit
         if (transaction.getId() != null) {
-            Transaction originalTransaction = transactionRepo.getOne(transaction.getId());
+            Transaction originalTransaction = transactionRepo.findById(transaction.getId())
+                    .orElseThrow(NoSuchTransactionIdException::new);
             changeAccountAmount(originalTransaction, transaction);
             if (transaction.getAccount().isNeedAccounting()) {
                 changeAccountingUnitFactAmount(originalTransaction, transaction);
@@ -180,13 +182,14 @@ public class TransactionControllerImpl implements TransactionController {
         Money originalTransMoney = Money.of(getCurrencyUnitFromTransaction(originalTrans), originalTrans.getAmount());
         Money editedTransMoney = Money.of(getCurrencyUnitFromTransaction(editedTrans), editedTrans.getAmount());
         LocalDate originalTransDate = originalTrans.getDate();
-        LocalDate editedTransDate = originalTrans.getDate();
-        Category transCategory = originalTrans.getCategory();
+        LocalDate editedTransDate = editedTrans.getDate();
+        Category originalTransCategory = originalTrans.getCategory();
+        Category editedTransCategory = editedTrans.getCategory();
 
         AccountingUnit originalAccountingUnit = accountingUnitController
-                .getByCategoryAndLocalDate(transCategory, originalTransDate);
+                .getByCategoryAndLocalDate(originalTransCategory, originalTransDate);
         AccountingUnit editedAccountingUnit = accountingUnitController
-                .getByCategoryAndLocalDate(transCategory, editedTransDate);
+                .getByCategoryAndLocalDate(editedTransCategory, editedTransDate);
         accountingUnitController.decreaseFactAmount(originalAccountingUnit, originalTransMoney);
         accountingUnitController.increaseFactAmount(editedAccountingUnit, editedTransMoney);
     }
