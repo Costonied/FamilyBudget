@@ -49,6 +49,7 @@ public class CategoryControllerImpl implements CategoryController {
         List<String> types = new ArrayList<>();
         types.add(CategoryCode.INCOME.getCode());
         types.add(CategoryCode.OUTGO.getCode());
+        types.add(CategoryCode.GOALS.getCode());
         return categoryRepo.findAllByTypeIn(types);
     }
 
