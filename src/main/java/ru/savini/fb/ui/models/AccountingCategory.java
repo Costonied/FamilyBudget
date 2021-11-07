@@ -1,13 +1,14 @@
 package ru.savini.fb.ui.models;
 
+import org.joda.money.Money;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.Category;
 
 import java.math.BigDecimal;
 
 public class AccountingCategory {
-    private Category category;
-    private AccountingUnit accountingUnit;
+    private final Category category;
+    private final AccountingUnit accountingUnit;
 
     public AccountingCategory(Category category, AccountingUnit accountingUnit) {
         this.category = category;

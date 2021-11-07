@@ -21,12 +21,13 @@ Family Budget App working on Vaadin
   * If you want start with embedded H2 DB then just setup VM options `-Dspring.profiles.active=local`
 
 # Application settings
-Set up it on the _Settings_ view in UI  
+Setup it on the _Settings_ view in UI  
 
-| Key                             | Description                                          |
-| ------------------------------- | ---------------------------------------------------- |
-| app.locale                      | Application locale                                   |
-| default.account.id.for.outgoing | Default account ID for outgoing (spend) transactions |
+| Key                             | Description                                              |
+| ------------------------------- | ---------------------------------------------------------|
+| app.locale                      | Application locale                                       |
+| app.accounting.currency         | Application currency for Accounting view. Default is RUB |
+| default.account.id.for.outgoing | Default account ID for outgoing (spend) transactions     |
 
 # Heroku
 ## Deploy on Heroku
