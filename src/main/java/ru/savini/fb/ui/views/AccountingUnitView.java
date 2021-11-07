@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -18,8 +19,14 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
+import com.vaadin.flow.spring.annotation.UIScope;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.enums.CategoryCode;
+import ru.savini.fb.exceptions.InvalidAccountingViewCodeException;
+import ru.savini.fb.settings.Settings;
 import ru.savini.fb.ui.components.FBGrid;
 import ru.savini.fb.controller.AccountingUnitController;
 import ru.savini.fb.ui.editors.AccountingUnitEditorDialog;
@@ -32,6 +39,8 @@ public class AccountingUnitView extends VerticalLayout {
     private static final String GOALS_VIEW_CODE = "goals";
     private static final String INCOMES_VIEW_CODE = "incomes";
     private static final String SPENDING_VIEW_CODE = "spending";
+    private static final String COLUMN_PLAN_AMOUNT_KEY = "planAmount";
+    private static final String COLUMN_FACT_AMOUNT_KEY = "factAmount";
 
     private String selectedView;
     private final FBGrid<AccountingCategory> goalsView = new FBGrid<>(AccountingCategory.class);
@@ -49,11 +58,14 @@ public class AccountingUnitView extends VerticalLayout {
     private final List<AccountingCategory> incomes = new ArrayList<>();
     private final List<AccountingCategory> spending = new ArrayList<>();
 
-    public AccountingUnitView(AccountingUnitController accountingUnitController, AccountingUnitEditorDialog editor) {
+    private final CurrencyUnit currencyUnit;
+
+    public AccountingUnitView(AccountingUnitController accountingUnitController, AccountingUnitEditorDialog editor, Settings settings) {
         this.editor = editor;
         this.accountingUnitController = accountingUnitController;
+        this.currencyUnit = settings.getAccountingCurrencyUnit();
+
         Button addNewBtn = new Button("New accounting unit", VaadinIcon.PLUS.create());
-        // build layout
         HorizontalLayout actions = new HorizontalLayout(addNewBtn);
         H2 goalsViewHeader = new H2("Goals");
         H2 incomesViewHeader = new H2("Incomes");
@@ -122,16 +134,19 @@ public class AccountingUnitView extends VerticalLayout {
     private void refreshSpendingGrid() {
         refreshSpending();
         spendingView.setItems(spending);
+        refreshGridTotalFooters(spendingView, SPENDING_VIEW_CODE);
     }
 
     private void refreshIncomesGrid() {
         refreshIncomes();
         incomesView.setItems(incomes);
+        refreshGridTotalFooters(incomesView, INCOMES_VIEW_CODE);
     }
 
     private void refreshGoalsGrid() {
         refreshGoals();
         goalsView.setItems(goals);
+        refreshGridTotalFooters(goalsView, GOALS_VIEW_CODE);
     }
 
     private void refreshSelectedGrid() {
@@ -215,10 +230,15 @@ public class AccountingUnitView extends VerticalLayout {
                 });
     }
 
+    private void refreshGridTotalFooters(FBGrid<AccountingCategory> grid, String accountingViewCode) {
+        grid.getColumnByKey(COLUMN_PLAN_AMOUNT_KEY).setFooter(getTotalFooter(calculateTotalPlanAmount(accountingViewCode)));
+        grid.getColumnByKey(COLUMN_FACT_AMOUNT_KEY).setFooter(getTotalFooter(calculateTotalFactAmount(accountingViewCode)));
+    }
+
     private void setupGridColumns(FBGrid<AccountingCategory> grid) {
         grid.addColumn(AccountingCategory::getCategoryName).setHeader("Category");
-        grid.addColumn(new NumberRenderer<>(AccountingCategory::getPlanAmount, CurrencyHelper.format)).setHeader("Plan amount");
-        grid.addColumn(new NumberRenderer<>(AccountingCategory::getFactAmount, CurrencyHelper.format)).setHeader("Fact amount");
+        grid.addColumn(new NumberRenderer<>(AccountingCategory::getPlanAmount, CurrencyHelper.format)).setHeader("Plan amount").setKey(COLUMN_PLAN_AMOUNT_KEY);
+        grid.addColumn(new NumberRenderer<>(AccountingCategory::getFactAmount, CurrencyHelper.format)).setHeader("Fact amount").setKey(COLUMN_FACT_AMOUNT_KEY);
     }
 
     private void doGridSingleSelectAction(HasValue.ValueChangeEvent<AccountingCategory> event) {
@@ -233,5 +253,42 @@ public class AccountingUnitView extends VerticalLayout {
             accountingUnit.setMonth(selectedMonth.getValue().getValue());
         }
         editor.open(accountingUnit);
+    }
+
+    private String calculateTotalPlanAmount(String viewCode) {
+        Money total = Money.zero(currencyUnit);
+        List<AccountingCategory> accountingCategories = getAccountingCategoriesByView(viewCode);
+        for (AccountingCategory accountingCategory : accountingCategories) {
+            total = total.plus(Money.of(currencyUnit, accountingCategory.getPlanAmount()));
+        }
+        return total.toString();
+    }
+
+    private String calculateTotalFactAmount(String viewCode) {
+        Money total = Money.zero(currencyUnit);
+        List<AccountingCategory> accountingCategories = getAccountingCategoriesByView(viewCode);
+        for (AccountingCategory accountingCategory : accountingCategories) {
+            total = total.plus(Money.of(currencyUnit, accountingCategory.getFactAmount()));
+        }
+        return total.toString();
+    }
+
+    private List<AccountingCategory> getAccountingCategoriesByView(String viewCode) {
+        switch (viewCode) {
+            case INCOMES_VIEW_CODE:
+                return incomes;
+            case SPENDING_VIEW_CODE:
+                return spending;
+            case GOALS_VIEW_CODE:
+                return goals;
+            default:
+                throw new InvalidAccountingViewCodeException();
+        }
+    }
+
+    private Html getTotalFooter(String totalAmount) {
+        Html totalFooter = new Html("<b>Total: " + totalAmount + "</b>");
+        totalFooter.getElement().getStyle().set("font-size", "15px");
+        return totalFooter;
     }
 }
