@@ -1,24 +1,28 @@
 package ru.savini.fb.ui.editors;
 
 import java.time.Month;
+import java.math.BigDecimal;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.KeyNotifier;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.BigDecimalField;
-import com.vaadin.flow.component.textfield.IntegerField;
-import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import ru.savini.fb.controller.AccountingUnitController;
-import ru.savini.fb.controller.CategoryController;
-import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.ui.components.FBEditorDialog;
+import ru.savini.fb.domain.entity.AccountingUnit;
+import ru.savini.fb.controller.CategoryController;
+import ru.savini.fb.controller.AccountingUnitController;
 
 @UIScope
 @SpringComponent
@@ -31,10 +35,12 @@ public class AccountingUnitEditorDialog extends FBEditorDialog implements KeyNot
     private final transient AccountingUnitController accountingUnitController;
 
     IntegerField year = new IntegerField("Year");
-    private final ComboBox<Month> month = new ComboBox("Month");
+    private final ComboBox<Month> month = new ComboBox<>("Month");
     BigDecimalField planAmount = new BigDecimalField("Plan amount");
     BigDecimalField factAmount = new BigDecimalField("Fact amount");
-    ComboBox<Category> category = new ComboBox<>("Category");
+    private static final ComboBox<Category> category = new ComboBox<>("Category");
+
+    private final Text availableFundsValue = new Text("");
 
     private Notification duplicateNotification;
 
@@ -49,7 +55,7 @@ public class AccountingUnitEditorDialog extends FBEditorDialog implements KeyNot
         initDelete();
         initSave();
         initDuplicateNotification();
-        fields.add(category, year, month, planAmount, factAmount);
+        fields.add(new AvailableFunds(), category, year, month, planAmount, factAmount);
         cancel.addClickListener(e -> editAccountingUnit(accountingUnit));
         planAmount.setPlaceholder("0.00");
     }
@@ -117,6 +123,11 @@ public class AccountingUnitEditorDialog extends FBEditorDialog implements KeyNot
         super.open();
     }
 
+    public void open(AccountingUnit accountingUnit, BigDecimal availableFunds) {
+        this.availableFundsValue.setText(availableFunds.toString());
+        this.open(accountingUnit);
+    }
+
     public final void editAccountingUnit(AccountingUnit accountingUnit) {
         if (accountingUnit == null) {
             return;
@@ -166,5 +177,15 @@ public class AccountingUnitEditorDialog extends FBEditorDialog implements KeyNot
         month.setValue(Month.of(accountingUnit.getMonth()));
         factAmount.setValue(accountingUnit.getFactAmount());
         planAmount.setValue(accountingUnit.getPlanAmount());
+    }
+
+    private class AvailableFunds extends HorizontalLayout {
+        public AvailableFunds() {
+            Html availableFundsTitle = new Html("<b>Available plan funds: </b>");
+            add(availableFundsTitle, availableFundsValue);
+            this.setSpacing(true);
+            addAttachListener(event ->
+                    this.setVisible(!CategoryCode.isIncomeCategory(category.getValue())));
+        }
     }
 }

@@ -1,7 +1,8 @@
 package ru.savini.fb.controller;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.time.LocalDate;
+import java.math.BigDecimal;
 
 import org.joda.money.Money;
 import ru.savini.fb.domain.entity.Category;
@@ -20,4 +21,5 @@ public interface AccountingUnitController {
     void decreaseFactAmount(AccountingUnit accountingUnit, Money money);
 
     List<Category> getAllCategory();
+    BigDecimal getAvailablePlanFunds(int year, int month);
 }
