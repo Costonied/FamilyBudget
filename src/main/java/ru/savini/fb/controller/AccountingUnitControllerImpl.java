@@ -3,14 +3,17 @@ package ru.savini.fb.controller;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.util.stream.Collectors;
 
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import ru.savini.fb.repo.AccountingUnitRepo;
 import ru.savini.fb.domain.entity.Category;
+import ru.savini.fb.repo.AccountingUnitRepo;
+import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.domain.entity.AccountingUnit;
 import ru.savini.fb.exceptions.NoSuchAccountingUnitIdException;
 
@@ -85,6 +88,22 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
         return categoryController.getAllForAccounting();
     }
 
+    @Override
+    public BigDecimal getAvailablePlanFunds(int year, int month) {
+        List<AccountingUnit> accountingUnits = accountingUnitRepo.findAllByYearAndMonth(year, month);
+        List<AccountingUnit> incomes = accountingUnits.stream()
+                .filter(accountingUnit -> CategoryCode.isIncomeCategory(accountingUnit.getCategory()))
+                .collect(Collectors.toList());
+        List<AccountingUnit> spends = accountingUnits.stream()
+                .filter(accountingUnit -> {
+                    Category category = accountingUnit.getCategory();
+                    return CategoryCode.isOutgoingCategory(category) || CategoryCode.isGoalsCategory(category);
+                }).collect(Collectors.toList());
+        BigDecimal incomesPlanFunds = calculatePlanAmount(incomes);
+        BigDecimal spendsPlanFunds = calculatePlanAmount(spends);
+        return incomesPlanFunds.subtract(spendsPlanFunds);
+    }
+
     private Money getFactMoneyFromAccountingUnitAndMoney(AccountingUnit accountingUnit, Money transactionMoney) {
         CurrencyUnit currencyUnit = transactionMoney.getCurrencyUnit();
         return Money.of(currencyUnit, accountingUnit.getFactAmount());
@@ -96,5 +115,13 @@ public class AccountingUnitControllerImpl implements AccountingUnitController {
         newAccountingUnit.setMonth(month);
         newAccountingUnit.setCategory(category);
         return newAccountingUnit;
+    }
+
+    private BigDecimal calculatePlanAmount(List<AccountingUnit> accountingUnits) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (AccountingUnit accountingUnit : accountingUnits) {
+            total = total.add(accountingUnit.getPlanAmount());
+        }
+        return total;
     }
 }

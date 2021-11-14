@@ -1,37 +1,37 @@
 package ru.savini.fb.ui.views;
 
+import java.util.Map;
+import java.util.List;
 import java.time.Month;
+import java.util.HashMap;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
 
-import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-import com.vaadin.flow.spring.annotation.UIScope;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import org.springframework.beans.factory.annotation.Autowired;
-import ru.savini.fb.domain.entity.AccountingUnit;
-import ru.savini.fb.domain.enums.CategoryCode;
-import ru.savini.fb.exceptions.InvalidAccountingViewCodeException;
+import org.joda.money.CurrencyUnit;
+
 import ru.savini.fb.settings.Settings;
 import ru.savini.fb.ui.components.FBGrid;
-import ru.savini.fb.controller.AccountingUnitController;
-import ru.savini.fb.ui.editors.AccountingUnitEditorDialog;
+import ru.savini.fb.domain.enums.CategoryCode;
 import ru.savini.fb.ui.helpers.CurrencyHelper;
 import ru.savini.fb.ui.models.AccountingCategory;
+import ru.savini.fb.domain.entity.AccountingUnit;
+import ru.savini.fb.controller.AccountingUnitController;
+import ru.savini.fb.ui.editors.AccountingUnitEditorDialog;
+import ru.savini.fb.exceptions.InvalidAccountingViewCodeException;
 
 @PageTitle("Accounting")
 @Route(value = "accounting", layout = MainView.class)
@@ -246,13 +246,14 @@ public class AccountingUnitView extends VerticalLayout {
             return;
         }
         AccountingUnit accountingUnit = event.getValue().getAccountingUnit();
+        BigDecimal availablePlanFunds = accountingUnitController.getAvailablePlanFunds(selectedYear.getValue(), selectedMonth.getValue().getValue());
         if (accountingUnit == null) {
             accountingUnit = new AccountingUnit();
             accountingUnit.setCategory(event.getValue().getCategory());
             accountingUnit.setYear(selectedYear.getValue());
             accountingUnit.setMonth(selectedMonth.getValue().getValue());
         }
-        editor.open(accountingUnit);
+        editor.open(accountingUnit, availablePlanFunds);
     }
 
     private String calculateTotalPlanAmount(String viewCode) {
