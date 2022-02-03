@@ -174,7 +174,7 @@ public class AccountingUnitView extends VerticalLayout {
     private void initSelectedYear() {
         selectedYear.setLabel("Selected year");
         selectedYear.setItems(2021, 2022);
-        selectedYear.setValue(2021);
+        selectedYear.setValue(LocalDate.now().getYear());
     }
 
     private void initFind() {

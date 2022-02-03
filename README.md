@@ -19,6 +19,8 @@ Family Budget App working on Vaadin
 * Select DB type:
   * If you want start with own PostgreSQL DB then just setup DATABASE_URL in environment
   * If you want start with embedded H2 DB then just setup VM options `-Dspring.profiles.active=local`
+    * Default H2 login is `sa`
+    * Default H2 password is empty
 
 # Application settings
 Setup it on the _Settings_ view in UI  
